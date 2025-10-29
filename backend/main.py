@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
+from app.api.documents import router as documents_router
+
 # Load environment variables
 load_dotenv()
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
@@ -12,6 +14,9 @@ app = FastAPI(
     description="Backend API for AI Reader Agent - personalized reading assistance",
     version="1.0.0"
 )
+
+# Include routers
+app.include_router(documents_router)
 
 # Configure CORS
 app.add_middleware(

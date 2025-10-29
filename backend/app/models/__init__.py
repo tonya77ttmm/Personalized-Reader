@@ -1,1 +1,1 @@
-# Data models package
+# Models package

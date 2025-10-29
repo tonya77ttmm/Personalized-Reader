@@ -1,0 +1,13 @@
+This is a test document for the AI Reader Agent.
+
+The AI Reader Agent is designed to help users understand and learn from text documents. It provides contextual explanations for difficult content and tracks reading progress over time.
+
+Key features include:
+- Text file upload and processing
+- AI-powered explanations for selected text
+- Reading progress tracking
+- Personalized learning experience
+
+This document contains approximately 50 words and should take about 1 minute to read. It serves as a simple test case for the file upload functionality.
+
+The system supports various text formats and provides detailed metadata about uploaded documents including word count, estimated reading time, and file size information.
