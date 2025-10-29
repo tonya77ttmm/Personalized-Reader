@@ -1,5 +1,6 @@
 import { useState } from "react";
 import FileUpload from "../components/upload/FileUpload.tsx";
+import DocumentViewer from "../components/reader/DocumentViewer.tsx";
 
 const Reader = () => {
   const [uploadedDocument, setUploadedDocument] = useState<any>(null);
@@ -13,14 +14,17 @@ const Reader = () => {
     console.error("Upload error:", error);
   };
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">AI Reader</h1>
+  const handleUploadAnother = () => {
+    setUploadedDocument(null);
+  };
 
+  return (
+    <div className="min-h-screen bg-gray-50">
       {!uploadedDocument ? (
-        <div className="bg-white rounded-lg shadow-sm border p-8">
+        <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">AI Reader</h1>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">
               Upload a Document
             </h2>
             <p className="text-gray-600">
@@ -28,38 +32,36 @@ const Reader = () => {
             </p>
           </div>
 
-          <FileUpload
-            onUploadSuccess={handleUploadSuccess}
-            onUploadError={handleUploadError}
-          />
+          <div className="bg-white rounded-lg shadow-sm border p-8">
+            <FileUpload
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+            />
+          </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="mb-4 pb-4 border-b">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {uploadedDocument.title}
-            </h2>
-            <div className="flex items-center space-x-4 text-sm text-gray-500 mt-2">
-              <span>
-                📄 {Math.round(uploadedDocument.metadata.file_size / 1024)} KB
-              </span>
-              <span>📖 {uploadedDocument.metadata.word_count} words</span>
-              <span>
-                ⏱️ {uploadedDocument.metadata.estimated_reading_time} min read
-              </span>
+        <div className="min-h-screen">
+          {/* Header with Upload Another Button */}
+          <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+            <div className="max-w-6xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-900">AI Reader</h1>
+                <button
+                  onClick={handleUploadAnother}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Upload Another Document
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-gray-600">
-              Document uploaded successfully! Reading interface coming soon...
-            </p>
-            <button
-              onClick={() => setUploadedDocument(null)}
-              className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              Upload Another
-            </button>
+          {/* Document Viewer */}
+          <div className="py-8 px-4">
+            <DocumentViewer
+              documentId={uploadedDocument.id}
+              title={uploadedDocument.title}
+            />
           </div>
         </div>
       )}
