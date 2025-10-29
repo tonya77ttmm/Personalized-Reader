@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 
 from app.api.documents import router as documents_router
+from app.api.explanations import router as explanations_router
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +18,7 @@ app = FastAPI(
 
 # Include routers
 app.include_router(documents_router)
+app.include_router(explanations_router)
 
 # Configure CORS
 app.add_middleware(

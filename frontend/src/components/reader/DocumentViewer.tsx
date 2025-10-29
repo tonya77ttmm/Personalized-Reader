@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface DocumentViewerProps {
   documentId: string;
@@ -27,6 +27,11 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(16);
   const [lineHeight, setLineHeight] = useState(1.6);
+  const [selectedText, setSelectedText] = useState<string>("");
+  const [explanation, setExplanation] = useState<string>("");
+  const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
+  const [explanationError, setExplanationError] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -76,6 +81,106 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
   const decreaseLineHeight = () => {
     setLineHeight((prev) => Math.max(prev - 0.1, 1.2));
+  };
+  useEffect(() => {
+    if (selectedText) {
+      requestExplanation(); // Run once when selectedText changes
+    }
+  }, [selectedText]);
+
+  // Handle text selection - simple and natural
+  const handleTextSelection = () => {
+    const selection = window.getSelection();
+
+    if (selection && selection.rangeCount > 0) {
+      const text = selection.toString().trim();
+
+      if (text.length > 0) {
+        // User has selected text
+        setSelectedText(text);
+        // Clear previous explanation when new text is selected
+        setExplanation("");
+        setExplanationError("");
+      } else {
+        // No text selected (empty selection)
+        clearSelection();
+      }
+    } else {
+      // No selection at all
+      clearSelection();
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedText("");
+    setExplanation("");
+    setExplanationError("");
+    setIsLoadingExplanation(false);
+  };
+
+  const requestExplanation = async () => {
+    if (!selectedText.trim()) return;
+
+    setIsLoadingExplanation(true);
+    setExplanationError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/explanations/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: selectedText,
+          document_title: document?.title,
+          context: getContextAroundSelection(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to get explanation");
+      }
+
+      const result = await response.json();
+      setExplanation(result.explanation);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to get explanation";
+      setExplanationError(errorMessage);
+    } finally {
+      setIsLoadingExplanation(false);
+    }
+  };
+
+  const getContextAroundSelection = (): string => {
+    // Get some context around the selected text for better explanations
+    if (!document?.content) return "";
+
+    const content = document.content;
+    const selectedIndex = content.indexOf(selectedText);
+
+    if (selectedIndex === -1) return "";
+
+    // Get 100 characters before and after the selection
+    const start = Math.max(0, selectedIndex - 100);
+    const end = Math.min(
+      content.length,
+      selectedIndex + selectedText.length + 100
+    );
+
+    return content.substring(start, end);
+  };
+
+  // Clear selection when clicking elsewhere
+  const handleDocumentClick = () => {
+    // Small delay to let selection events complete first
+    setTimeout(() => {
+      const selection = window.getSelection();
+      if (!selection || selection.toString().trim() === "") {
+        clearSelection();
+      }
+    }, 10);
   };
 
   if (loading) {
@@ -288,14 +393,91 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         </div>
       </div>
 
+      {/* Selected Text Display */}
+      {selectedText && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <p className="text-sm text-blue-800 italic">"{selectedText}"</p>
+            </div>
+            <button
+              onClick={clearSelection}
+              className="ml-4 text-blue-400 hover:text-blue-600"
+              title="Clear selection"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Explanation Display */}
+          {explanation && (
+            <div className="mt-3 p-3 bg-white border border-blue-200 rounded-md">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {explanation}
+              </p>
+              <button
+                onClick={requestExplanation}
+                className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                Get new explanation
+              </button>
+            </div>
+          )}
+          {/* Error Display */}
+          {explanationError && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-start">
+                <svg
+                  className="w-4 h-4 text-red-400 mt-0.5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm text-red-800">{explanationError}</p>
+                  <button
+                    onClick={requestExplanation}
+                    className="mt-1 text-xs text-red-600 hover:text-red-800 underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Document Content */}
       <div className="bg-white rounded-lg shadow-sm border p-8">
         <div
-          className="prose max-w-none text-gray-900 leading-relaxed"
+          ref={contentRef}
+          className="prose max-w-none text-gray-900 leading-relaxed select-text cursor-text"
           style={{
             fontSize: `${fontSize}px`,
             lineHeight: lineHeight,
           }}
+          onMouseUp={handleTextSelection}
+          onClick={handleDocumentClick}
         >
           {document.content.split("\n").map((paragraph, index) => (
             <p key={index} className="mb-4 last:mb-0">
