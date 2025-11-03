@@ -69,7 +69,7 @@ This will start:
 ### Individual Commands
 
 - **Frontend only**: `npm run dev:frontend`
-- **Backend only**: `npm run dev:backend`
+- **Backend only**: "source venv/bin/activate && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
 - **Build for production**: `npm run build`
 - **Lint code**: `npm run lint`
 
