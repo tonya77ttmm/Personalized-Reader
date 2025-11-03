@@ -23,13 +23,13 @@ A personalized AI-powered reading assistant that helps users comprehend and lear
 - **Python 3.9+** with FastAPI
 - **Uvicorn** ASGI server
 - **Pydantic** for data validation
-- **OpenAI API** for AI explanations (future)
+- **OpenAI API** for AI explanations
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- npm
 - Python 3.9+
 - pip
 
@@ -52,8 +52,7 @@ A personalized AI-powered reading assistant that helps users comprehend and lear
 
    ```bash
    cd backend
-   cp .env.example .env
-   # Edit .env with your configuration
+   ...
    ```
 
 4. **Start development servers**
