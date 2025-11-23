@@ -8,7 +8,7 @@ from app.api.explanations import router as explanations_router
 
 # Load environment variables
 load_dotenv()
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+frontend_url = os.getenv("FRONTEND_URL")
 
 app = FastAPI(
     title="AI Reader Agent API",
@@ -32,15 +32,3 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "AI Reader Agent API is running"}
-
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "service": "ai-reader-api",
-        "version": "1.0.0"
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
