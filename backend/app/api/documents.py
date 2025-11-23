@@ -133,26 +133,26 @@ async def upload_document(file: UploadFile = File(...)):
         )
 
 
-@router.get("/")
-async def list_documents():
-    """
-    List all uploaded documents.
+# @router.get("/")
+# async def list_documents():
+#     """
+#     List all uploaded documents.
     
-    Returns:
-        List of document metadata
-    """
-    try:
-        documents = document_service.list_documents()
-        return {
-            "documents": documents,
-            "count": len(documents),
-            "message": "Documents retrieved successfully"
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list documents: {str(e)}"
-        )
+#     Returns:
+#         List of document metadata
+#     """
+#     try:
+#         documents = document_service.list_documents()
+#         return {
+#             "documents": documents,
+#             "count": len(documents),
+#             "message": "Documents retrieved successfully"
+#         }
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to list documents: {str(e)}"
+#         )
 
 
 @router.get("/{document_id}")
@@ -186,35 +186,35 @@ async def get_document(document_id: str):
         )
 
 
-@router.delete("/{document_id}")
-async def delete_document(document_id: str):
-    """
-    Delete a document by ID.
+# @router.delete("/{document_id}")
+# async def delete_document(document_id: str):
+#     """
+#     Delete a document by ID.
     
-    Args:
-        document_id: The document ID to delete
+#     Args:
+#         document_id: The document ID to delete
         
-    Returns:
-        Deletion confirmation
-    """
-    try:
-        deleted = document_service.delete_document(document_id)
+#     Returns:
+#         Deletion confirmation
+#     """
+#     try:
+#         deleted = document_service.delete_document(document_id)
         
-        if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Document with ID {document_id} not found"
-            )
+#         if not deleted:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail=f"Document with ID {document_id} not found"
+#             )
         
-        return {
-            "message": f"Document {document_id} deleted successfully",
-            "deleted": True
-        }
+#         return {
+#             "message": f"Document {document_id} deleted successfully",
+#             "deleted": True
+#         }
         
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete document: {str(e)}"
-        )
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to delete document: {str(e)}"
+#         )

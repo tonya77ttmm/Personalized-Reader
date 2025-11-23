@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from dotenv import load_dotenv
-
+from ..models.explanation import ExplanationRequest,ExplanationResponse
 
 load_dotenv()
 
@@ -32,19 +32,7 @@ prompt = ChatPromptTemplate.from_messages([
 # Create the chain
 explanation_chain = prompt | model|output_parser
 
-class ExplanationRequest(BaseModel):
-    """Request model for text explanation."""
-    text: str
-    context: Optional[str] = None
-    document_title: Optional[str] = None
 
-
-class ExplanationResponse(BaseModel):
-    """Response model for text explanation."""
-    text: str
-    explanation: str
-    context_used: bool
-    response_time_ms: int
 
 
 @router.post("/", response_model=ExplanationResponse)
@@ -104,12 +92,3 @@ async def get_explanation(request: ExplanationRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate explanation: {str(e)}"
         )
-
-@router.get("/health")
-async def explanation_health():
-    """Health check for explanation service."""
-    return {
-        "status": "healthy",
-        "langchain_configured": explanation_chain is not None,
-        "service": "explanation-api"
-    }

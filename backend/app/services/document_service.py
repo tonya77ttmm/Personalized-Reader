@@ -17,7 +17,8 @@ class DocumentService:
     
     def __init__(self, storage_path: str = "storage/documents"):
         """
-        Initialize the document service.
+        Create ducument storage path
+        Initialize the document service. 
         
         Args:
             storage_path: Path to store documents (relative to backend root)
@@ -149,52 +150,52 @@ class DocumentService:
             'content': content
         }
     
-    def list_documents(self) -> List[Dict]:
-        """
-        List all stored documents.
+    # def list_documents(self) -> List[Dict]:
+    #     """
+    #     List all stored documents.
         
-        Returns:
-            List of document metadata
-        """
-        documents = []
-        metadata_dir = self.storage_path / "metadata"
+    #     Returns:
+    #         List of document metadata
+    #     """
+    #     documents = []
+    #     metadata_dir = self.storage_path / "metadata"
         
-        for metadata_file in metadata_dir.glob("*.json"):
-            try:
-                with open(metadata_file, 'r', encoding='utf-8') as f:
-                    doc_data = json.load(f)
-                    # Don't include full content in list view
-                    doc_data.pop('content', None)
-                    documents.append(doc_data)
-            except Exception:
-                # Skip corrupted files
-                continue
+    #     for metadata_file in metadata_dir.glob("*.json"):
+    #         try:
+    #             with open(metadata_file, 'r', encoding='utf-8') as f:
+    #                 doc_data = json.load(f)
+    #                 # Don't include full content in list view
+    #                 doc_data.pop('content', None)
+    #                 documents.append(doc_data)
+    #         except Exception:
+    #             # Skip corrupted files
+    #             continue
         
-        # Sort by upload date (newest first)
-        documents.sort(key=lambda x: x.get('uploaded_at', ''), reverse=True)
-        return documents
+    #     # Sort by upload date (newest first)
+    #     documents.sort(key=lambda x: x.get('uploaded_at', ''), reverse=True)
+    #     return documents
     
-    def delete_document(self, document_id: str) -> bool:
-        """
-        Delete a document by ID.
+    # def delete_document(self, document_id: str) -> bool:
+    #     """
+    #     Delete a document by ID.
         
-        Args:
-            document_id: Document ID to delete
+    #     Args:
+    #         document_id: Document ID to delete
             
-        Returns:
-            True if deleted, False if not found
-        """
-        metadata_file = self.storage_path / "metadata" / f"{document_id}.json"
-        content_file = self.storage_path / "content" / f"{document_id}.txt"
+    #     Returns:
+    #         True if deleted, False if not found
+    #     """
+    #     metadata_file = self.storage_path / "metadata" / f"{document_id}.json"
+    #     content_file = self.storage_path / "content" / f"{document_id}.txt"
         
-        deleted = False
+    #     deleted = False
         
-        if metadata_file.exists():
-            metadata_file.unlink()
-            deleted = True
+    #     if metadata_file.exists():
+    #         metadata_file.unlink()
+    #         deleted = True
         
-        if content_file.exists():
-            content_file.unlink()
-            deleted = True
+    #     if content_file.exists():
+    #         content_file.unlink()
+    #         deleted = True
         
-        return deleted
+    #     return deleted

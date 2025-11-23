@@ -1,5 +1,6 @@
 """
 Document models for the AI Reader Agent.
+FastAPI uses BaseModel for request/response:
 """
 
 from pydantic import BaseModel
