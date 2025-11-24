@@ -102,7 +102,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
   // Apply yellow highlight to selected text for inline display
   useEffect(() => {
-    if (selectedText && wordCount <= 3 && wordCount > 0) {
+    if (selectedText && wordCount > 0) {
       const selection = window.getSelection();
       if (selection) {
         const range = selection.getRangeAt(0);
