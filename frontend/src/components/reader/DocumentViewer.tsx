@@ -41,6 +41,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     width: number;
     height: number;
   } | null>(null);
+  const [selectionOffset, setSelectionOffset] = useState<number>(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -176,16 +177,16 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           });
         }
 
-        // Clear previous explanation when new text is selected
-        setExplanation("");
-        setExplanationError("");
-      } else {
-        // No text selected (empty selection)
-        clearSelection();
+        // Calculate the actual character offset in the document content
+        // This is needed to get the correct context for duplicate words
+        if (container) {
+          const preSelectionRange = range.cloneRange();
+          preSelectionRange.selectNodeContents(container);
+          preSelectionRange.setEnd(range.startContainer, range.startOffset);
+          const offset = preSelectionRange.toString().length;
+          setSelectionOffset(offset);
+        }
       }
-    } else {
-      // No selection at all
-      clearSelection();
     }
   };
 
@@ -196,6 +197,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     setIsLoadingExplanation(false);
     setWordCount(0);
     setSelectionPosition(null);
+    setSelectionOffset(0);
   };
 
   const requestExplanation = async () => {
@@ -237,7 +239,9 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     if (!document?.content) return "";
 
     const content = document.content;
-    const selectedIndex = content.indexOf(selectedText); // BUG for the same word
+
+    // Use the actual selection offset instead of indexOf to handle duplicate words
+    const selectedIndex = selectionOffset;
 
     if (selectedIndex === -1) return "";
 
@@ -251,17 +255,17 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     return content.substring(start, end);
   };
 
-  // Clear selection when clicking elsewhere
-  const handleDocumentClick = () => {
-    // Small delay to let selection events complete first
-    setTimeout(() => {
-      const selection = window.getSelection();
-      console.log(`trigger click ${selection}`);
-      if (!selection || selection.toString().trim() === "") {
-        setSelectedText("");
-      }
-    }, 10);
-  };
+  // // Clear selection when clicking elsewhere
+  // const handleDocumentClick = () => {
+  //   // Small delay to let selection events complete first
+  //   setTimeout(() => {
+  //     const selection = window.getSelection();
+  //     console.log(`trigger click ${selection}`);
+  //     if (!selection || selection.toString().trim() === "") {
+  //       setSelectedText("");
+  //     }
+  //   }, 10);
+  // };
 
   if (loading) {
     return (
@@ -337,7 +341,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               lineHeight: lineHeight,
             }}
             onMouseUp={handleTextSelection}
-            onClick={handleDocumentClick}
+            // onClick={handleDocumentClick}
           >
             {document.content.split("\n").map((paragraph, index) => (
               <p key={index} className="mb-6 indent-6">
