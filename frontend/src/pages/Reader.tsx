@@ -42,7 +42,7 @@ const Reader = () => {
       ) : (
         <div className="min-h-screen">
           {/* Document Viewer */}
-          <div className="py-8 px-4">
+          <div>
             <DocumentViewer
               documentId={uploadedDocument.id}
               title={uploadedDocument.title}

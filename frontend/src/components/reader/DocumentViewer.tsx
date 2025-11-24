@@ -33,6 +33,21 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
   const [explanationError, setExplanationError] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 112) {
+        // 7rem = 112px
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -212,68 +227,66 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Document Header */}
-      <div className="mb-6 pb-4 border-b border-gray-200 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {document.title}
-        </h1>
-        <button
-          onClick={onUploadDocument}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Upload
-        </button>
+    <div className="min-h-screen bg-[#fcfcfc]">
+      {/* Left Side - Document Content (2/3) */}
+      <div className="w-3/4 px-2">
+        <article className="mx-auto">
+          {/* Document Header */}
+          <header className="mb-8 flex items-center justify-between">
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">
+              {document.title}
+            </h1>
+
+            <button
+              onClick={onUploadDocument}
+              className="px-4 py-2 bg-blue-200 text-blue-800 rounded-md hover:bg-blue-300 hover:text-blue-900 transition-colors"
+              title="Upload Document"
+            >
+              Upload
+            </button>
+          </header>
+
+          {/* Document Content */}
+          <div
+            ref={contentRef}
+            className="text-lg leading-relaxed text-gray-800 select-text cursor-text"
+            style={{
+              fontSize: `${fontSize}px`,
+              lineHeight: 1.8,
+            }}
+            onMouseUp={handleTextSelection}
+            onClick={handleDocumentClick}
+          >
+            {document.content.split("\n").map((paragraph, index) => (
+              <p key={index} className="mb-6 indent-6">
+                {paragraph.trim() || "\u00A0"}
+              </p>
+            ))}
+          </div>
+        </article>
       </div>
 
-      {/* Selected Text Display */}
-      {selectedText && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <p className="text-sm text-blue-800 italic">"{selectedText}"</p>
-            </div>
-            <button
-              onClick={clearSelection}
-              className="ml-4 text-blue-400 hover:text-blue-600"
-              title="Clear selection"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Explanation Display */}
-          {explanation && (
-            <div className="mt-3 p-3 bg-white border border-blue-200 rounded-md">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {explanation}
-              </p>
+      {/* Right Side - Fixed Sidebar (1/3) - Aligned with content */}
+      <div
+        className="fixed right-0 w-1/4 border-l border-gray-200 bg-white px-6 overflow-y-auto"
+        style={{
+          top: scrolled ? "0" : "7rem",
+          height: scrolled ? "100vh" : "calc(100vh - 7rem)",
+        }}
+      >
+        {selectedText ? (
+          <div>
+            <div className="flex items-start justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Selected Text
+              </h3>
               <button
-                onClick={requestExplanation}
-                className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                onClick={clearSelection}
+                className="text-gray-400 hover:text-gray-600"
+                title="Clear selection"
               >
-                Get new explanation
-              </button>
-            </div>
-          )}
-          {/* Error Display */}
-          {explanationError && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
-              <div className="flex items-start">
                 <svg
-                  className="w-4 h-4 text-red-400 mt-0.5 mr-2"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -282,51 +295,53 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                <div className="flex-1">
-                  <p className="text-sm text-red-800">{explanationError}</p>
+              </button>
+            </div>
+            <p className="text-sm text-gray-800 italic mb-4 pb-4 border-b border-gray-200">
+              "{selectedText}"
+            </p>
+
+            {/* Explanation Section */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                Explanation
+              </h3>
+              {explanation && (
+                <div>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    {explanation}
+                  </p>
                   <button
                     onClick={requestExplanation}
-                    className="mt-1 text-xs text-red-600 hover:text-red-800 underline"
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Get new explanation
+                  </button>
+                </div>
+              )}
+              {explanationError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-800 mb-2">
+                    {explanationError}
+                  </p>
+                  <button
+                    onClick={requestExplanation}
+                    className="text-xs text-red-600 hover:text-red-800 underline"
                   >
                     Try again
                   </button>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Document Content */}
-      <div className="bg-white rounded-lg shadow-sm border p-8">
-        <div
-          ref={contentRef} // contentRef is not used for the time being
-          className="prose max-w-none text-gray-900 leading-relaxed select-text cursor-text"
-          style={{
-            fontSize: `${fontSize}px`,
-            lineHeight: lineHeight,
-          }}
-          onMouseUp={handleTextSelection}
-          onClick={handleDocumentClick}
-        >
-          {document.content.split("\n").map((paragraph, index) => (
-            <p key={index} className="mb-4 last:mb-0">
-              {paragraph.trim() || "\u00A0"}{" "}
-              {/* Non-breaking space for empty lines */}
-            </p>
-          ))}
-        </div>
-      </div>
-
-      {/* Document Footer */}
-      <div className="mt-6 text-center text-sm text-gray-500">
-        <p>
-          Uploaded on {new Date(document.uploaded_at).toLocaleDateString()} at{" "}
-          {new Date(document.uploaded_at).toLocaleTimeString()}
-        </p>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500 text-center mt-8">
+            Select text to see explanation
+          </div>
+        )}
       </div>
     </div>
   );
