@@ -6,7 +6,6 @@ class ExplanationRequest(BaseModel):
     """Request model for text explanation."""
     text: str
     context: Optional[str] = None
-    document_title: Optional[str] = None
 
 
 class ExplanationResponse(BaseModel):

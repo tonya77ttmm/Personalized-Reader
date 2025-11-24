@@ -21,7 +21,6 @@ interface Document {
 
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
   documentId,
-  title,
   onUploadDocument,
 }) => {
   const [document, setDocument] = useState<Document | null>(null);
@@ -65,25 +64,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     }
   }, [documentId]);
 
-  const increaseFontSize = () => {
-    setFontSize((prev) => Math.min(prev + 2, 24));
-  };
-
-  const decreaseFontSize = () => {
-    setFontSize((prev) => Math.max(prev - 2, 12));
-  };
-
-  const resetFontSize = () => {
-    setFontSize(16);
-  };
-
-  const increaseLineHeight = () => {
-    setLineHeight((prev) => Math.min(prev + 0.1, 2.0));
-  };
-
-  const decreaseLineHeight = () => {
-    setLineHeight((prev) => Math.max(prev - 0.1, 1.2));
-  };
   useEffect(() => {
     if (selectedText) {
       requestExplanation(); // Run once when selectedText changes
@@ -93,13 +73,14 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   // Handle text selection - simple and natural
   const handleTextSelection = () => {
     const selection = window.getSelection();
-
+    console.log(`selected text${selection}`);
     if (selection && selection.rangeCount > 0) {
       const text = selection.toString().trim();
 
       if (text.length > 0) {
         // User has selected text
         setSelectedText(text);
+        console.log(`set selected text${text} sucessfully`);
         // Clear previous explanation when new text is selected
         setExplanation("");
         setExplanationError("");
@@ -134,7 +115,6 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         },
         body: JSON.stringify({
           text: selectedText,
-          document_title: document?.title,
           context: getContextAroundSelection(),
         }),
       });
@@ -160,7 +140,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     if (!document?.content) return "";
 
     const content = document.content;
-    const selectedIndex = content.indexOf(selectedText);
+    const selectedIndex = content.indexOf(selectedText); // BUG for the same word
 
     if (selectedIndex === -1) return "";
 
@@ -179,8 +159,9 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     // Small delay to let selection events complete first
     setTimeout(() => {
       const selection = window.getSelection();
+      console.log(`trigger click ${selection}`);
       if (!selection || selection.toString().trim() === "") {
-        clearSelection();
+        setSelectedText("");
       }
     }, 10);
   };
@@ -322,7 +303,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* Document Content */}
       <div className="bg-white rounded-lg shadow-sm border p-8">
         <div
-          ref={contentRef}
+          ref={contentRef} // contentRef is not used for the time being
           className="prose max-w-none text-gray-900 leading-relaxed select-text cursor-text"
           style={{
             fontSize: `${fontSize}px`,
