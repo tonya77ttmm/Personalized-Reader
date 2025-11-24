@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 interface DocumentViewerProps {
   documentId: string;
   title?: string;
+  onUploadDocument?: () => void;
 }
 
 interface Document {
@@ -21,6 +22,7 @@ interface Document {
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
   documentId,
   title,
+  onUploadDocument,
 }) => {
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
@@ -231,166 +233,16 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Document Header */}
-      <div className="mb-6 pb-4 border-b border-gray-200">
+      <div className="mb-6 pb-4 border-b border-gray-200 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           {document.title}
         </h1>
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-          <span className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            {Math.round(document.metadata.file_size / 1024)} KB
-          </span>
-          <span className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
-            {document.metadata.word_count.toLocaleString()} words
-          </span>
-          <span className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            {document.metadata.estimated_reading_time} min read
-          </span>
-        </div>
-      </div>
-
-      {/* Reading Controls */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">
-              Font Size:
-            </span>
-            <button
-              onClick={decreaseFontSize}
-              className="p-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600"
-              title="Decrease font size"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 12H4"
-                />
-              </svg>
-            </button>
-            <span className="text-sm text-gray-600 min-w-[3rem] text-center">
-              {fontSize}px
-            </span>
-            <button
-              onClick={increaseFontSize}
-              className="p-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600"
-              title="Increase font size"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">
-              Line Height:
-            </span>
-            <button
-              onClick={decreaseLineHeight}
-              className="p-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600"
-              title="Decrease line height"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 12H4"
-                />
-              </svg>
-            </button>
-            <span className="text-sm text-gray-600 min-w-[3rem] text-center">
-              {lineHeight.toFixed(1)}
-            </span>
-            <button
-              onClick={increaseLineHeight}
-              className="p-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600"
-              title="Increase line height"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <button
-            onClick={resetFontSize}
-            className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-600"
-          >
-            Reset
-          </button>
-        </div>
+        <button
+          onClick={onUploadDocument}
+          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        >
+          Upload
+        </button>
       </div>
 
       {/* Selected Text Display */}
