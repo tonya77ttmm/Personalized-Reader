@@ -26,7 +26,7 @@ model = ChatOpenAI(
         )
 # Create the prompt template
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful reading assistant. Explain words, idioms, or technical terms based on the context. Keep explanations clear, concise, and under 50 words. Focus on meaning and cultural context."),
+    ("system", "You are a helpful reading assistant. Explain words, idioms, or technical terms based on the context. Keep explanations clear, concise, and under 5 words if possible. Focus on meaning and cultural context. For example, if user asks to explain recommend, don't reply like <in this context, recommend means suggest or advise something>; keep it simple like<advise something>, remove the orginal word here recommend, just gives the contextual meaning"),
     ("user", "Explain this text: '{text}'\n\nContext: {context}")
 ])
 # Create the chain

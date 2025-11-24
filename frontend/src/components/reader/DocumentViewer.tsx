@@ -26,14 +26,21 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fontSize, setFontSize] = useState(16);
-  const [lineHeight, setLineHeight] = useState(1.6);
+  const [fontSize, setFontSize] = useState(20);
+  const [lineHeight, setLineHeight] = useState(2.8);
   const [selectedText, setSelectedText] = useState<string>("");
   const [explanation, setExplanation] = useState<string>("");
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
   const [explanationError, setExplanationError] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [wordCount, setWordCount] = useState<number>(0);
+  const [selectionPosition, setSelectionPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,6 +92,49 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     }
   }, [selectedText]);
 
+  // Utility function to count words
+  const countWords = (text: string): number => {
+    return text
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
+  };
+
+  // Apply yellow highlight to selected text for inline display
+  useEffect(() => {
+    if (selectedText && wordCount <= 3 && wordCount > 0) {
+      const selection = window.getSelection();
+      if (selection) {
+        const range = selection.getRangeAt(0);
+        const span = window.document.createElement("span");
+        span.className = "inline-highlight";
+        span.style.backgroundColor = "rgb(254, 240, 138)"; // yellow-200
+        span.style.padding = "2px 4px";
+        span.style.borderRadius = "2px";
+
+        try {
+          range.surroundContents(span);
+        } catch (e) {
+          console.warn("Could not apply highlight:", e);
+        }
+      }
+    }
+
+    // Cleanup: remove highlights when selection changes
+    return () => {
+      const highlights = window.document.querySelectorAll(".inline-highlight");
+      highlights.forEach((highlight: Element) => {
+        const parent = highlight.parentNode;
+        if (parent) {
+          while (highlight.firstChild) {
+            parent.insertBefore(highlight.firstChild, highlight);
+          }
+          parent.removeChild(highlight);
+        }
+      });
+    };
+  }, [selectedText, wordCount]);
+
   // Handle text selection - simple and natural
   const handleTextSelection = () => {
     const selection = window.getSelection();
@@ -96,6 +146,36 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         // User has selected text
         setSelectedText(text);
         console.log(`set selected text${text} sucessfully`);
+
+        // Count words
+        const words = countWords(text);
+        setWordCount(words);
+
+        // Get selection position for inline display
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        // get container rect (viewport coords)
+        const container = contentRef.current;
+        const containerRect = container?.getBoundingClientRect();
+
+        if (containerRect) {
+          // Compute selection position RELATIVE TO container (viewport - viewport = relative)
+          setSelectionPosition({
+            top: rect.top - containerRect.top, // relative to the top of contentRef
+            left: rect.left - containerRect.left, // relative to the left of contentRef
+            width: rect.width,
+            height: rect.height,
+          });
+        } else {
+          // fallback to page coords if container missing
+          setSelectionPosition({
+            top: rect.top + window.scrollY,
+            left: rect.left + window.scrollX,
+            width: rect.width,
+            height: rect.height,
+          });
+        }
+
         // Clear previous explanation when new text is selected
         setExplanation("");
         setExplanationError("");
@@ -114,6 +194,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     setExplanation("");
     setExplanationError("");
     setIsLoadingExplanation(false);
+    setWordCount(0);
+    setSelectionPosition(null);
   };
 
   const requestExplanation = async () => {
@@ -249,10 +331,10 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           {/* Document Content */}
           <div
             ref={contentRef}
-            className="text-lg leading-relaxed text-gray-800 select-text cursor-text"
+            className="text-lg leading-relaxed text-gray-800 select-text cursor-text relative"
             style={{
               fontSize: `${fontSize}px`,
-              lineHeight: 1.8,
+              lineHeight: lineHeight,
             }}
             onMouseUp={handleTextSelection}
             onClick={handleDocumentClick}
@@ -262,11 +344,63 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
                 {paragraph.trim() || "\u00A0"}
               </p>
             ))}
+
+            {/* Inline Explanation for ≤3 words */}
+            {selectedText && wordCount <= 3 && selectionPosition && (
+              <div
+                className="absolute z-10 bg-white  "
+                style={{
+                  top: `${selectionPosition.top}px`,
+                  left: `${selectionPosition.left}px`,
+                  transform: "translateY(-110%)",
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  {isLoadingExplanation && (
+                    <div className="flex items-center text-xs text-gray-500">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                      Loading...
+                    </div>
+                  )}
+
+                  {explanation && !isLoadingExplanation && (
+                    <p className="text-sm text-blue-600 leading-relaxed">
+                      {explanation}
+                    </p>
+                  )}
+
+                  {explanationError && (
+                    <div className="text-xs text-red-600">
+                      {explanationError}
+                    </div>
+                  )}
+                  <button
+                    onClick={clearSelection}
+                    className="text-gray-400 hover:text-gray-600 ml-2"
+                    title="Clear"
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </article>
       </div>
 
-      {/* Right Side - Fixed Sidebar (1/3) - Aligned with content */}
+      {/* Right Side - Fixed Sidebar (1/3) - Only for >3 words */}
       <div
         className="fixed right-0 w-1/4 border-l border-gray-200 bg-white px-6 overflow-y-auto"
         style={{
@@ -274,7 +408,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           height: scrolled ? "100vh" : "calc(100vh - 7rem)",
         }}
       >
-        {selectedText ? (
+        {selectedText && wordCount > 3 ? (
           <div>
             <div className="flex items-start justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-700">
