@@ -5,6 +5,7 @@ import os
 
 from app.api.documents import router as documents_router
 from app.api.explanations import router as explanations_router
+from app.database import init_db
 
 # Load environment variables
 load_dotenv()
@@ -15,6 +16,11 @@ app = FastAPI(
     description="Backend API for AI Reader Agent - personalized reading assistance",
     version="1.0.0"
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    init_db()
 
 # Include routers
 app.include_router(documents_router)
