@@ -26,6 +26,27 @@ class DocumentResponse(BaseModel):
     message: str
 
 
+class DocumentMetadataResponse(BaseModel):
+    """Response model for document metadata endpoint."""
+    id: str
+    title: str
+    total_pages: int
+    total_words: int
+    words_per_page: int
+    uploaded_at: datetime
+
+
+class PageDataResponse(BaseModel):
+    """Response model for document page endpoint."""
+    page_number: int
+    content: str
+    start_word_index: int
+    end_word_index: int
+    word_count: int
+    context_before: str
+    context_after: str
+
+
 class ErrorResponse(BaseModel):
     """Error response model."""
     error: str

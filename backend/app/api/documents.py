@@ -10,7 +10,7 @@ from typing import List
 from fastapi import APIRouter, File, UploadFile, HTTPException, status
 from fastapi.responses import JSONResponse
 
-from ..models.document import DocumentResponse, ErrorResponse
+from ..models.document import DocumentResponse, DocumentMetadataResponse, PageDataResponse, ErrorResponse
 from ..services.document_service import DocumentService
 
 # Optional import for python-magic (requires system libmagic)
@@ -153,6 +153,91 @@ async def upload_document(file: UploadFile = File(...)):
 #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 #             detail=f"Failed to list documents: {str(e)}"
 #         )
+
+
+@router.get("/{document_id}/metadata", response_model=DocumentMetadataResponse)
+async def get_document_metadata(document_id: str):
+    """
+    Get document metadata by ID.
+    
+    Args:
+        document_id: The document ID to retrieve metadata for
+        
+    Returns:
+        DocumentMetadataResponse: Document metadata including total_pages, total_words, words_per_page
+        
+    Raises:
+        HTTPException: 404 if document not found, 500 for server errors
+    """
+    try:
+        metadata = document_service.get_document_metadata(document_id)
+        
+        if not metadata:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Document with ID {document_id} not found"
+            )
+        
+        return metadata
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve document metadata: {str(e)}"
+        )
+
+
+@router.get("/{document_id}/pages/{page_number}", response_model=PageDataResponse)
+async def get_document_page(document_id: str, page_number: int):
+    """
+    Get a specific page from a document by ID and page number.
+    
+    Args:
+        document_id: The document ID to retrieve page from
+        page_number: The page number to retrieve (1-indexed)
+        
+    Returns:
+        PageDataResponse: Page content with context windows
+        
+    Raises:
+        HTTPException: 404 if document or page not found, 400 for invalid page numbers, 500 for server errors
+    """
+    try:
+        # Validate page number
+        if page_number < 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid page number: {page_number}. Page numbers must be >= 1"
+            )
+        
+        # Fetch page from service
+        page_data = document_service.get_document_page(document_id, page_number)
+        
+        if not page_data:
+            # Check if document exists to provide better error message
+            metadata = document_service.get_document_metadata(document_id)
+            if not metadata:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Document with ID {document_id} not found"
+                )
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Page {page_number} not found. Document has {metadata['total_pages']} pages"
+                )
+        
+        return page_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve page: {str(e)}"
+        )
 
 
 @router.get("/{document_id}")
