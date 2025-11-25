@@ -19,7 +19,7 @@ const Reader = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       {!uploadedDocument ? (
         <div className="max-w-4xl mx-auto pt-8">
           <div className="text-center mb-8">
@@ -40,7 +40,7 @@ const Reader = () => {
           </div>
         </div>
       ) : (
-        <div className="min-h-screen">
+        <div>
           {/* Document Viewer */}
           <div>
             <DocumentViewer
