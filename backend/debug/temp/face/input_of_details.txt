@@ -1,0 +1,13 @@
+Input:/Users/tonya/Documents/806/Personalized-Reader/backend/debug/temp/input.png
+Input full path:/Users/tonya/Documents/806/Personalized-Reader/backend/debug/temp/input.png
+Camera parameters:500,500,320,240
+Output HOG:input.hog
+Output image:input.jpg
+Output aligned directory:input_aligned
+Output csv:input.csv
+Gaze: 1
+AUs: 1
+Landmarks 2D: 1
+Landmarks 3D: 1
+Pose: 1
+Shape parameters: 1
