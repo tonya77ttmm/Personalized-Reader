@@ -2,9 +2,12 @@
 #test just on this file not whole application
 
 
+
 import torch
 import os
-import subprocess
+import cv2
+import numpy as np
+
 import tempfile
 from pathlib import Path
 
@@ -13,10 +16,16 @@ import torch.nn as nn
 from PIL import Image
 from torchvision import transforms
 
-from app.models import models_vit, confusion_classifier
+from ...models import models_vit, confusion_classifier
+from .FaceExtractor import FaceExtractor
+from .OpenFaceExtractor import OpenFaceExtractor
+from .MediaPipeExtractor import MediaPipeExtractor
 
-PROJECT_ROOT=Path(__file__).resolve().parents[2]
-OPEN_FACE_DIR=PROJECT_ROOT/"OpenFace"/"build"/"bin"/"FaceLandmarkImg"
+openface_extractor = OpenFaceExtractor()
+extractor = MediaPipeExtractor()
+
+PROJECT_ROOT=Path(__file__).resolve().parents[3]
+
 
 class ConfusionService:
 
@@ -66,15 +75,15 @@ class ConfusionService:
         # ==========================
         # 3. MLP classifier
         # ==========================
-        classifier_ckpt_path = (PROJECT_ROOT/"app"/"models"/"MLP_1024_512_final_model.pth")
+        classifier_ckpt_path = (PROJECT_ROOT/"app"/"models"/"MLP_final_model_512.pth")
         ckpt = torch.load(
-             classifier_ckpt_path, map_location="cpu",weights_only=False)
+             classifier_ckpt_path, map_location="cpu",weights_only=True)
 
-        hp = ckpt["hyperparameters"]
+        # hp = ckpt["hyperparameters"]
         self.classifier = confusion_classifier.EmotionMLP(
             input_size=768,
-            hidden_layers=[1024, 512],
-            dropout_rate=hp["dropout"],
+            hidden_layers=ckpt["architecture"],
+            dropout_rate=ckpt["dropout_rate"],
             num_classes=2
         )
         self.classifier.load_state_dict(ckpt["model_state_dict"])
@@ -98,25 +107,25 @@ class ConfusionService:
         ])
 
     def predict(self, frame_bytes):
-
+        
         # ==========================
         # Step 1
         # save received image
         # ==========================
 
-        temp_dir = PROJECT_ROOT/"debug"/"temp"
+        # temp_dir = PROJECT_ROOT/"debug"/"temp"
 
-        temp_dir.mkdir(
-            exist_ok=True)
+        # temp_dir.mkdir(
+        #     exist_ok=True)
 
 
-        input_path = (
-            temp_dir / "input.png"
-        )
+        # input_path = (
+        #     temp_dir / "input.png"
+        # )
 
-        # /** need to restore after test
-        Path(input_path).write_bytes(frame_bytes)
-        print("Saved input frame to:", input_path, flush=True)
+        # # /** need to restore after test
+        # Path(input_path).write_bytes(frame_bytes)
+        # print("Saved input frame to:", input_path, flush=True)
         
 
         # ==========================
@@ -124,46 +133,29 @@ class ConfusionService:
         # OpenFace crop face
         # ==========================
 
-        face_dir = (
-            temp_dir / "face"
-        )
+        #step 1 : decode bytes into an opencv image
+        np_arr = np.frombuffer(frame_bytes, np.uint8)
 
-        face_dir.mkdir(
-            exist_ok=True
-        )
-        print("Running OpenFace for face detection and alignment...", flush=True)
-        command = [
-            str(OPEN_FACE_DIR),
-            "-f",
-            str(input_path),
-            "-out_dir",
-            str(face_dir)
-        ]
-        print("Running command:", " ".join(str(c) for c in command), flush=True)
-        result = subprocess.run(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-)
+        #frame is a normal OpenCV image (numpy.ndarray).
+        frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)  
+        
+        #extract face using mediapipe
+        #face is already the cropped face image.
+        print("extractor starts",flush=True)
+        face,face_box=extractor.preprocess(frame)
+        
+        
+        # face_dir = (
+        #     temp_dir / "face"
+        # )
 
+        # face_dir.mkdir(
+        #     exist_ok=True
+        # )
+        # print("Running OpenFace for face detection and alignment...", flush=True)
 
-
-        # OpenFace output
-        # 找 aligned face
-
-        aligned_dir = face_dir / "input_aligned"
-        face_files = list(
-        aligned_dir.glob("*.bmp")
-        )
-
-        if len(face_files) == 0:
-            raise Exception("No aligned face found")
-
-        face_path = face_files[0]
-
-
-        print("Detected and aligned face saved to:", face_path, flush=True)
+        # face_path=openface_extractor.preprocess(input_path,output_dir=face_dir)
+        
         # debug save
         # predict_face=PROJECT_ROOT/"debug"/"predict_face.jpg"    
         # # debug_face = Path(
@@ -182,10 +174,15 @@ class ConfusionService:
         # Step 3
         # MAE feature extraction
         # ==========================
-        print("Opening image...", flush=True)
-        image = Image.open(
-            face_path
-        ).convert("RGB")
+        #covert openCV image to PIL image
+        face=cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(face)
+
+        # print("Opening image...", flush=True)
+        # image = Image.open(
+        #     face_path
+        # ).convert("RGB")
+
 
         print("Transform...", flush=True)
         image = self.transform(
@@ -198,7 +195,7 @@ class ConfusionService:
         image = image.to(
             self.device
         )   
-        print("Running MAE...", flush=True)
+        print("Running MA...", flush=True)
         print("self.device:", self.device, flush=True)  
 
         print(image.shape)
@@ -242,10 +239,10 @@ class ConfusionService:
 
         print("Confusion probability:", confusion_prob, flush=True)
 
-        return confusion_prob
+        return confusion_prob,face_box
 
 # if __name__ == "__main__":
 #     service = ConfusionService()
 #     # test with a sample image
 #     confusion_prob = service.predict()
-#     print("Confusion probability for test image:", confusion_prob)
+#     print("Confusion probability for test image:", confusion_prob)E
