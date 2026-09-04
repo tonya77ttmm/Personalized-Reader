@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from ..models.document import DocumentResponse, DocumentMetadataResponse, PageDataResponse, ErrorResponse
 from ..services.document_service import DocumentService
-from ..services.confusion_service import ConfusionService
+from ..services.confusion_service.confusion_service import ConfusionService
 
 # Optional import for python-magic (requires system libmagic)
 try:
@@ -114,9 +114,9 @@ async def reading_ws(websocket:WebSocket):
 
             # print("saved frame", flush=True)
             # prediction=confusion_service.predict(frame)
-            prediction = await asyncio.to_thread(confusion_service.predict,frame)
+            prediction,face_box = await asyncio.to_thread(confusion_service.predict,frame)
             print("Prediction:", prediction , flush=True)
-            await websocket.send_json({"confusion_prob":prediction})
+            await websocket.send_json({"confusion_prob":prediction,"face_box":face_box})
     except Exception as e:
         print(f"WebSocket error: {e}")
 

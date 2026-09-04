@@ -4,14 +4,19 @@ export class CameraService {
   async start(video: HTMLVideoElement, onFrame: (frame: Blob) => void) {
     // 1. request camera access
     this.stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: {
+        width: 640,
+
+        height: 480,
+      },
     });
     // const video = document.createElement("video");
 
     video.srcObject = this.stream;
 
     await video.play();
-
+    console.log("video w_h");
+    console.log(video.videoWidth, video.videoHeight);
     // 3. create canvas for screenshots
     const canvas = document.createElement("canvas");
 

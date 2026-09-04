@@ -16,7 +16,7 @@ class EmotionMLP(nn.Module):
             in_dim = h
 
         layers.append(nn.Linear(in_dim, num_classes))
-        self.net = nn.Sequential(*layers)
+        self.model = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.net(x)
+        return self.model(x)
