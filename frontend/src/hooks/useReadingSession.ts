@@ -1,5 +1,3 @@
-// hooks/useReadingSession.ts
-
 import { useEffect, useState } from "react";
 import { WebSocketService } from "../services/websocket";
 import { CameraService } from "../services/camera";
@@ -10,38 +8,29 @@ type FaceBox = {
   width: number;
   height: number;
 };
-export function useReadingSession(videoRef: React.RefObject<HTMLVideoElement>) {
+
+export function useReadingSession(sourceCanvas: HTMLCanvasElement | null) {
   const [confusion, setConfusion] = useState(0);
   const [faceBox, setFaceBox] = useState<FaceBox | null>(null);
+
   useEffect(() => {
-    if (!videoRef.current) {
-      return;
-    }
-    // create websocket service
+    if (!sourceCanvas) return;
+
     const websocket = new WebSocketService();
-    const camera = new CameraService();
-    // connect to the websocket server
+    const framePublisher = new CameraService();
+
     websocket.connect((message) => {
-      console.log("Message from backend:", message);
       setConfusion(message.confusion_prob);
-      if (message.face_box) {
-        setFaceBox(message.face_box);
-      } else {
-        setFaceBox(null);
-      }
-    });
-    // 2. open camera
-
-    camera.start(videoRef.current, (frame) => {
-      websocket.send(frame);
+      setFaceBox(message.face_box ?? null);
     });
 
-    // cleanup
+    framePublisher.start(sourceCanvas, (frame) => websocket.send(frame));
+
     return () => {
-      camera.stop();
+      framePublisher.stop();
       websocket.disconnect();
     };
-  }, [videoRef]);
+  }, [sourceCanvas]);
 
   return {
     confusion,
