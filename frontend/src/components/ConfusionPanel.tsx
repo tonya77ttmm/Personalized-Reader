@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReadingSession } from "../hooks/useReadingSession";
 import { useWebGazer, type GazePoint } from "../hooks/useWebGazer";
 import { CalibrationOverlay } from "./eyeTracking/CalibrationOverlay";
@@ -10,6 +10,16 @@ type ConfusionPanelProps = {
 export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [calibrated, setCalibrated] = useState(false);
+  const [gazeTrail, setGazeTrail] = useState<GazePoint[]>([]);
+  const handleFixation = useCallback(
+    (point: GazePoint) => {
+      if (calibrated) {
+        setGazeTrail((previousPoints) => [...previousPoints, point]);
+      }
+      onFixation?.(point);
+    },
+    [calibrated, onFixation],
+  );
   const {
     isReady: isEyeTrackingReady,
     error: eyeTrackingError,
@@ -17,7 +27,7 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
     sourceCanvas,
     resetCalibration,
     calibrateAt,
-  } = useWebGazer({ onFixation });
+  } = useWebGazer({ onFixation: handleFixation });
   const { confusion, faceBox } = useReadingSession(sourceCanvas);
 
   const frameSize = {
@@ -63,26 +73,27 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
         />
       )}
 
-      {calibrated && gazePoint && (
+      {gazeTrail.map((point, index) => (
         <div
+          key={index}
           aria-hidden="true"
-          title="Current predicted gaze"
+          title={`Fixation ${index + 1}`}
           style={{
             position: "fixed",
-            left: gazePoint.x,
-            top: gazePoint.y,
-            width: "18px",
-            height: "18px",
+            left: point.x,
+            top: point.y,
+            width: "10px",
+            height: "10px",
             transform: "translate(-50%, -50%)",
-            border: "3px solid #ec4899",
+            border: "2px solid #ec4899",
             borderRadius: "50%",
-            background: "rgba(236, 72, 153, 0.2)",
-            boxShadow: "0 0 12px rgba(236, 72, 153, 0.9)",
+            background: "rgba(236, 72, 153, 0.4)",
+            boxShadow: "0 0 7px rgba(236, 72, 153, 0.65)",
             pointerEvents: "none",
             zIndex: 3000,
           }}
         />
-      )}
+      ))}
 
       <div
         style={{

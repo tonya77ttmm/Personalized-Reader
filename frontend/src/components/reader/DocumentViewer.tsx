@@ -487,7 +487,11 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               ? // Render paginated content
                 currentPageData.content.split("\n").map((paragraph, index) => (
                   <p key={index} className="mb-6 indent-6">
-                    {paragraph.trim() ? <GazeParagraph text={paragraph} /> : "\u00A0"}
+                    {paragraph.trim() ? (
+                      <GazeParagraph text={paragraph} />
+                    ) : (
+                      "\u00A0"
+                    )}
                   </p>
                 ))
               : "No Data Available"}
@@ -545,11 +549,11 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             )}
           </div>
 
-          {fixatedWord && (
+          {/* {fixatedWord && (
             <p className="mt-2 text-xs text-blue-600">
               Current fixation: {fixatedWord}
             </p>
-          )}
+          )} */}
 
           {/* Pagination Navigation Controls */}
           {metadata && totalPages > 0 && (
