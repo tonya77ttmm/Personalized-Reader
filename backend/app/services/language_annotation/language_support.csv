@@ -1,32 +1,24 @@
 paragraph_id,term,importance_score,explanation,importance_reason
-p1,objectivity,3,The idea that facts can be seen or known without personal feelings or bias.,The entire paragraph is about questioning what 'objectivity' means and who gets to define it.
-p1,epistemology,3,"The study of how we know things, and what counts as true knowledge.","The text says the debate is happening in the realm of epistemology, which is the academic field that controls the discussion."
-p1,masculinist,2,Relating to or favoring men's ideas or views.,This word helps identify the group (scientists and philosophers) that the feminist inquiry is criticizing.
-p1,embodied others,2,People who have physical bodies and real-world experiences.,"This phrase defines the group ('we') that the author identifies as having a specific, physical point of view."
-p1,ambivalently,1,Feeling two opposing emotions (like liking and disliking) at the same time.,"This word describes the complex feeling the group has toward a certain type of sexuality, adding nuance to the conclusion."
-p2,dichotomy,3,A division or contrast between two things that are seen as opposed.,The opening sentence uses this word to set up the main argument about two opposing ideas.
-p2,objectivity,3,"The quality of being unbiased; seeing things as they truly are, without personal feelings.",This is the main topic of the entire paragraph; the text discusses how objectivity is viewed.
-p2,social constructionist,3,"A view that knowledge is created by society and culture, not found naturally.",This is the specific theory that the paragraph uses to challenge traditional ideas about knowledge.
-p2,privileged,2,"Having special rights, status, or importance that others do not have.",The paragraph argues that no single group's view should be automatically treated as more important than others.
-p2,stakes,2,Something that is risked or gained; what someone has to lose or gain.,This word helps explain the motive behind the scientists' claims—they have something to gain or lose.
-p2,cowed,2,Feeling afraid or intimidated by someone or something.,The paragraph warns us not to let ourselves be afraid or controlled by the scientists' descriptions.
-p3,Social constructionists,3,"People who believe that ideas and knowledge are created by society, not just by facts.","This group is the main subject of the paragraph, and their view is the central idea being discussed."
-p3,ideologies,3,A set of beliefs or ideas that form a system of thought.,The paragraph is criticizing these official belief systems about how science works.
-p3,objectivity,3,"Being fair and unbiased; seeing things only as they really are, without personal feelings.",The paragraph specifically questions the idea that scientific knowledge can be completely unbiased.
-p3,loose fit,2,Not matching well; not being closely connected.,This phrase summarizes the main argument: what scientists say they do does not match what they actually do.
-p4,disembodied scientific objectivity,3,The idea that science is purely factual and exists outside of human culture or experience.,This phrase is central to the paragraph's main argument about how people believe in science.
-p4,ideological doctrines,2,A set of beliefs or ideas that guide how a group thinks about the world.,Understanding this helps the reader grasp what kind of beliefs the people mentioned in the text are following.
-p4,disciplinary chauvinism,2,"Too much pride or belief in one's own field of study, making one think it is better than others.",This word explains the author's self-critique about their own academic biases.
-p4,signifiers,3,Words or symbols that point to or represent something else (like a word pointing to an idea).,This term is key to the theoretical ideas presented in the latter half of the paragraph.
-p5,social constructionists,3,"People who believe that ideas and knowledge are created by society, not by nature.","This group's theory is the main argument of the paragraph, setting up the entire discussion about how knowledge is formed."
-p5,epistemology,3,The study of how we know things; the theory of knowledge.,The paragraph discusses how theories about knowledge (epistemology) might be used to distract from reality.
-p5,rhetoric,3,The art of persuasion; using language to convince others.,"The text argues that science itself is fundamentally a form of rhetoric, which is the core idea of the passage."
-p5,agonistic power field,3,A place or situation where different groups or ideas are in conflict or struggle for control.,"This phrase describes the nature of all knowledge, suggesting that knowledge is always a site of struggle."
-p5,verbiage,2,Too many words; overly complicated language.,It helps the reader understand that the philosophical language used is potentially misleading or excessive.
-p5,social actors,2,People or groups who participate in society and influence each other.,"The paragraph says that knowledge must persuade these people, making them important to the main argument."
-p5,deconstruction,2,A way of reading or thinking that breaks down texts to show hidden assumptions or meanings.,It is listed as a key tool used to analyze and challenge the nature of truth and knowledge.
-p6,mediations,3,The ways or methods through which we understand or know the world.,This word is essential because the paragraph says that all knowledge must pass through these specific ways of understanding.
-p6,postmodernism,3,"A way of thinking that questions big, universal truths and stable reality.","This is a core academic theory that the entire paragraph is discussing, making it essential for understanding the main argument."
-p6,social constructionist program,3,"A theory that argues that reality is created or built by society, not by nature.","This phrase defines the specific theoretical framework the author is analyzing, which is key to understanding the argument."
-p6,critical discourse,2,A method of analysis used to examine language and talk to find hidden power structures.,"This is a specific 'tool' the author mentions, helping the reader understand the academic method being used."
-p6,socially negotiated reality,2,The idea that what we accept as 'real' is agreed upon by a group of people.,"This is the main subject of the discussion, showing that reality is not absolute but agreed upon."
+p1,objectivity,3,The idea of being neutral and not influenced by personal feelings or a physical body.,This is the main concept the author is questioning and discussing throughout the text.
+p1,embodied others,2,People who are seen as having physical bodies and personal perspectives that might make them seem less neutral.,It explains who the 'we' refers to in the author's comparison against the 'they'.
+p1,epistemology,2,The study of how we know what is true and what counts as knowledge.,It identifies the specific academic field where these debates about science and knowledge are happening.
+p1,special-interest groups,2,Groups that fight for a specific cause or viewpoint.,The author uses this term to describe how feminists are viewed by those in power in the academic world.
+p2,dichotomy,2,A division between two opposite ideas.,It helps the reader understand that feminists are caught between two conflicting choices.
+p2,social constructionist argument,3,The idea that knowledge is created by society rather than being a simple truth.,This is the main viewpoint being discussed that challenges scientific truth.
+p2,privileged,2,Given special importance or a higher status.,It explains that no single person's view is automatically seen as better than others.
+p2,power moves,2,Actions used to gain control or influence.,It explains why people create boundaries in knowledge to control information instead of finding truth.
+p2,throwing sand in our eyes,2,Trying to trick or confuse people so they cannot see the truth.,It explains the idea that scientists might be hiding the truth from us.
+p3,Social constructionists,2,People who believe that knowledge is created by society rather than just being discovered.,This identifies the group of people making the argument in the paragraph.
+p3,official ideologies,2,The standard or accepted ideas about how things should work.,The paragraph compares these accepted ideas to how science actually works.
+p3,objectivity,2,The idea of being neutral and not letting personal feelings influence results.,This is one of the main ideas that the authors are questioning.
+p3,loose fit,2,When two things do not match or are not very similar.,This explains the main point that what scientists say and what they do are different.
+p4,ideological doctrines of disembodied scientific objectivity,3,The belief that science is perfectly neutral and not affected by human bodies or feelings.,This is the central idea that the author argues is a mistaken belief held by nonscientists.
+p4,play of signifiers,2,The idea that words and meanings are always changing and never stay the same.,This concept explains why the author believes true objectivity is impossible and why the world feels 'warped'.
+p5,social constructionists,2,People who believe that ideas and knowledge are created by society.,This group's viewpoint is the main subject of the paragraph.
+p5,rhetoric,3,The use of language to persuade people to believe something.,The author argues that science is actually a form of persuasion rather than just finding facts.
+p5,manufactured knowledge,2,Information that is created by people to reach a specific goal.,It explains how knowledge is used as a tool to gain power.
+p5,agonistic power field,2,A situation where different groups compete for control.,It describes the environment where knowledge and truth are used as tools for competition.
+p5,contestable text,2,Something that can be argued about or disagreed with.,"It shows that the author believes science is not a single, unchangeable truth."
+p6,social constructionist program,2,The idea that our understanding of reality is created by society.,This is the main concept the author is describing and reacting to.
+p6,postmodernism,2,"A way of thinking that questions the idea of one single, objective truth.",The author uses this to describe the specific type of thinking that makes them feel nervous.
+p6,socially negotiated reality,2,The idea that what we call 'real' is something people agree upon through social rules.,This explains the specific view of the world that the author compares to a military battlefield.

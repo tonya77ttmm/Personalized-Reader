@@ -10,26 +10,23 @@ import re
 
 client = OpenAI(
     base_url="http://localhost:11434/v1",
-    api_key="ollama"
+    api_key="ollama",
+    # Do not let client-side retries turn one stage into repeated requests.
+    max_retries=0,
 )
 
 MODEL = "gemma4:26b"
+MAX_OUTPUT_TOKENS = 32500
 
 
 # ============================================================
-# 2. Prompt
+# 2. Prompts
 # ============================================================
 
-prompt = """Goal:
-Help college students whose first language is not English understand important difficult words or phrases in an academic paragraph.
+annotation_requirements = """Goal:
+Help primary school students whose first language is not English understand important difficult words or phrases in an academic paragraph.
 
 Select only vocabulary that may block or significantly reduce understanding of the paragraph. For each selected term, give a short, simple explanation based on how the term is used in this paragraph.
-
-Input:
-<input_data>
-{paragraph_id}
-{paragraph}
-</input_data>
 
 Rules:
 
@@ -83,19 +80,9 @@ Rules:
 
 9. If no difficult word or phrase is important enough to support comprehension, return an empty "items" list.
 
-10. Before producing the answer, review the selected terms ONCE:
-    - Is each term genuinely difficult for an English learner?
-    - Is each term important enough to include?
-    - Does the explanation match the meaning in this paragraph?
-    - Is the explanation short and written in simple English?
-    - Did I avoid explaining background knowledge or the whole paragraph?
-    - Is the importance score justified?
+"""
 
-    After this single review, immediately produce the final JSON.
-    Do not repeatedly reconsider or review the selection.
-
-Output:
-Return valid JSON only.
+json_output_format = """Return valid JSON only.
 Do not return reasoning, commentary, Markdown, or any text outside the JSON.
 
 Format:
@@ -110,6 +97,69 @@ Format:
     }
   ]
 }
+"""
+
+draft_prompt = """You are the draft writer.
+
+Create the first vocabulary-annotation draft from the input paragraph. Follow all requirements below. Do not review or critique the draft; produce it directly.
+
+{requirements}
+
+Input:
+<input_data>
+{paragraph_id}
+{paragraph}
+</input_data>
+
+{output_format}
+"""
+
+editor_prompt = """You are the editor.
+
+Compare the input paragraph with the draft JSON. Make one editing pass: remove terms that should not be included, correct meanings or importance scores when needed, and simplify explanations when needed. Preserve correct work. Do not explain the edits and do not begin another review cycle.
+
+{requirements}
+
+Input paragraph:
+<input_data>
+{paragraph_id}
+{paragraph}
+</input_data>
+
+Draft JSON:
+<draft_json>
+{draft_json}
+</draft_json>
+
+{output_format}
+"""
+
+reviewer_prompt = """You are the final reviewer.
+
+Check the edited JSON against the input paragraph once. Keep it unchanged when it meets the requirements. Otherwise, make only the necessary final corrections. Do not add commentary, describe the review, or start another review cycle. Return the final JSON directly.
+
+{requirements}
+
+Review criteria for this one final pass:
+    - Is each term genuinely difficult for an English learner?
+    - Is each term important enough to include?
+    - Does the explanation match the meaning in this paragraph?
+    - Is the explanation short and written in simple English?
+    - Did I avoid explaining background knowledge or the whole paragraph?
+    - Is the importance score justified?
+
+Input paragraph:
+<input_data>
+{paragraph_id}
+{paragraph}
+</input_data>
+
+Edited JSON:
+<edited_json>
+{edited_json}
+</edited_json>
+
+{output_format}
 """
 
 
@@ -151,35 +201,28 @@ def split_paragraphs(article):
 
 
 # ============================================================
-# 5. Call the local LLM for ONE paragraph
+# 5. Run the fixed three-stage workflow for ONE paragraph
 # ============================================================
 
-def analyze_paragraph(paragraph_id, paragraph):
+def parse_annotation_response(response, paragraph_id, stage):
     """
-    Send one paragraph to the local LLM.
-    Return the parsed JSON response.
+    Parse and minimally validate a stage response.
+    Return None when the response cannot safely be used.
     """
+    if not response.choices:
+        print(f"\nERROR: Empty {stage} response for {paragraph_id}")
+        return None
 
-    current_prompt = prompt.replace(
-    "{paragraph_id}", paragraph_id
-).replace(
-    "{paragraph}", paragraph
-)
+    choice = response.choices[0]
 
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {
-                "role": "user",
-                "content": current_prompt
-            }
-        ],
-        temperature=0
-    )
+    # A length-limited response may contain incomplete JSON. Do not retry it.
+    if choice.finish_reason == "length":
+        print(f"\nERROR: {stage} reached the output limit for {paragraph_id}")
+        return None
 
-    raw_output = response.choices[0].message.content.strip()
+    raw_output = (choice.message.content or "").strip()
 
-    # Remove Markdown code fences if the model adds them
+    # Keep this fallback in case a model returns fences despite JSON mode.
     if raw_output.startswith("```"):
         raw_output = re.sub(
             r"^```(?:json)?\s*|\s*```$",
@@ -191,11 +234,97 @@ def analyze_paragraph(paragraph_id, paragraph):
     try:
         result = json.loads(raw_output)
     except json.JSONDecodeError:
-        print(f"\nERROR: Invalid JSON for {paragraph_id}")
+        print(f"\nERROR: Invalid JSON from {stage} for {paragraph_id}")
         print(raw_output)
         return None
 
+    if not isinstance(result, dict) or not isinstance(result.get("items"), list):
+        print(f"\nERROR: Invalid annotation structure from {stage} for {paragraph_id}")
+        return None
+
+    required_item_fields = {
+        "term",
+        "importance_score",
+        "explanation",
+        "importance_reason",
+    }
+    if any(
+        not isinstance(item, dict) or not required_item_fields.issubset(item)
+        for item in result["items"]
+    ):
+        print(f"\nERROR: Invalid item structure from {stage} for {paragraph_id}")
+        return None
+
+    # The caller controls paragraph IDs, rather than trusting a model response.
+    result["paragraph_id"] = paragraph_id
     return result
+
+
+def call_annotation_stage(prompt, paragraph_id, stage):
+    """Make exactly one bounded request for a workflow stage."""
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            max_tokens=MAX_OUTPUT_TOKENS,
+            response_format={"type": "json_object"},
+            reasoning_effort="none",
+        )
+    except Exception as error:
+        print(f"\nERROR: {stage} request failed for {paragraph_id}: {error}")
+        return None
+
+    return parse_annotation_response(response, paragraph_id, stage)
+
+
+def analyze_paragraph(paragraph_id, paragraph):
+    """
+    Produce an annotation through exactly three roles: draft writer, editor,
+    and final reviewer. A failed later stage falls back to its valid predecessor.
+    """
+    draft = call_annotation_stage(
+        draft_prompt.format(
+            requirements=annotation_requirements,
+            paragraph_id=paragraph_id,
+            paragraph=paragraph,
+            output_format=json_output_format,
+        ),
+        paragraph_id,
+        "draft",
+    )
+
+    if draft is None:
+        return {"paragraph_id": paragraph_id, "items": []}
+
+    edited = call_annotation_stage(
+        editor_prompt.format(
+            requirements=annotation_requirements,
+            paragraph_id=paragraph_id,
+            paragraph=paragraph,
+            draft_json=json.dumps(draft, ensure_ascii=False),
+            output_format=json_output_format,
+        ),
+        paragraph_id,
+        "editor",
+    )
+
+    if edited is None:
+        return draft
+
+    reviewed = call_annotation_stage(
+        reviewer_prompt.format(
+            requirements=annotation_requirements,
+            paragraph_id=paragraph_id,
+            paragraph=paragraph,
+            edited_json=json.dumps(edited, ensure_ascii=False),
+            output_format=json_output_format,
+        ),
+        paragraph_id,
+        "final reviewer",
+    )
+
+    return reviewed if reviewed is not None else edited
 
 
 # ============================================================
