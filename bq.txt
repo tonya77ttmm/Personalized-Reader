@@ -1,0 +1,114 @@
+2. Why Presales Instead of Software Development?
+I actually enjoy software development, but I’ve realized that I also really enjoy working with people.
+During my master’s degree, I’ve had two customer-facing roles: Teaching Assistant and Library Makerspace Facilitator.
+In both roles, I helped students learn new technologies, answered their questions, and troubleshot technical problems.
+What I found most rewarding was seeing how happy and relieved they were when I helped them solve a problem.
+That’s why I’m interested in presales. I want to continue using my technical knowledge, but also work directly with customers, understand their challenges, and help them find solutions that really work for them.
+I think presales is a great combination of both.
+Tell Me About a Time You Went Above and Beyond for a Customer
+When I was working as a Makerspace Facilitator at the university library, many students complained about how difficult it was to remove supports from their 3D prints.
+Sometimes the supports were attached so firmly that removing them would damage the model. One student even accidentally broke off the hands of a printed figure while removing the supports.
+The student asked if we could use dissolvable support material instead.
+I brought this suggestion to my supervisor, but it wasn’t feasible because of the additional cost.
+So I started looking for another solution.
+I went through the documentation for our 3D printing software and found a setting that controls the gap between the supports and the printed model.
+I thought increasing that gap might make the supports easier to remove without compromising their function.
+I discussed the idea with our technician. He mentioned that he normally used the default settings, but encouraged me to test it.
+So I experimented with different settings and found that increasing the gap made the supports much easier to remove.
+After that, I shared the results with my supervisor and updated our instructions so that both coworkers and students could use the improved settings.
+We received positive feedback from students, who found the supports much easier to remove.
+This experience taught me that understanding the customer’s real problem is more important than simply following their initial request.
+Sometimes, there’s a better solution that meets their needs while also respecting business constraints.
+Tell Me About a Time You Failed
+ 
+One challenge I faced was during my master’s thesis project, where I was developing a personalized reading assistant.
+One of the features was a confusion detection model that could identify when readers were confused and provide additional support.
+However, my initial model performed poorly, with an F1 score of only around 0.4.
+When I tested it with people in our lab, it often failed to detect confusion, even when someone made an obvious confused expression.
+At first, I thought the problem was with the classifier.
+So I tried different classification algorithms, but the results didn’t improve much.
+Then I suspected the feature extraction process, so I experimented with different feature extractors. Unfortunately, that didn’t solve the problem either.
+Eventually, I started questioning the quality of my training data.
+The original dataset contained videos labeled as either confused or not confused. I had followed an existing research approach and assigned the same label to every frame in each video.
+But I realized that someone might only look confused for a few seconds, even if the entire video was labeled as confused.
+So I went back and manually reviewed the videos. I re-annotated the data, keeping only the segments where confusion was actually visible, and removed samples where the labels were too ambiguous.
+After retraining the model, the F1 score improved from around 0.4 to 0.73, with a recall of 0.86.
+I also tested it again in our lab and saw a significant improvement in detecting visible expressions of confusion.
+Looking back, my mistake was trusting the original labeling strategy without validating whether it was appropriate for my specific task. The biggest lesson I learned was not to make assumptions about where a technical problem comes from.
+ 
+Now, when something doesn’t work, I try to systematically examine the entire pipeline and validate my assumptions with evidence.
+5. Tell Me About a Time You Were Wrong
+During one of my research projects, my supervisor and I had different opinions about how to choose a threshold for measuring students’ achievement emotions.
+We used questionnaire scores to determine whether students experienced certain emotions.
+My supervisor suggested using 3.5 as the threshold.
+I wasn’t fully convinced because I felt that choosing 3.5 was somewhat arbitrary. I thought we should also consider other thresholds, such as 3 and 4.
+Instead of continuing to debate which number was better, I suggested that we test all three thresholds and compare the results.
+After running the analysis, we found that using 3 didn’t produce a significant difference between the groups, while using 4 resulted in a very uneven data distribution.
+The threshold of 3.5 gave us a more balanced distribution, so we decided to use it.
+Although I initially questioned my supervisor’s suggestion, the results showed that 3.5 was the most suitable option among the thresholds we tested.
+This experience taught me to stay open-minded and not become too attached to my initial assumptions.
+I also learned that when people disagree, testing different approaches can be more productive than simply arguing about which one is right.
+. Tell Me About a Time You Took Ownership
+When I was working as a Makerspace Facilitator, one of my responsibilities was training students who were using our 3D printers for the first time.
+One day, a student told me that the instructions in our online training course didn’t match the equipment we had in the Makerspace.
+I checked the course on Canvas and realized that it was still based on our older Ultimaker printers.
+However, we had already switched to Prusa printers, which had different workflows and software settings.
+Although updating the course wasn’t part of my regular responsibilities, I realized that outdated instructions could confuse students and make their first experience more difficult.
+So I volunteered to update the training materials.
+I reviewed the new printer workflows and revised the instructions to reflect the equipment we were actually using.
+After the update, students had access to more accurate training materials and could follow the instructions more easily.
+This experience taught me that taking ownership isn’t just about completing assigned tasks.
+It’s also about noticing problems, taking initiative, and making improvements that benefit the whole team and our customers.
+. Tell Me About a Time You Helped a Colleague
+When I was working at the Makerspace, I noticed that several 3D printing jobs had failed because the printers couldn’t feed the filament properly.
+After investigating, I discovered that the filament had become tangled on the spool.
+I realized that a new facilitator wasn’t familiar with the correct way to handle filament when changing spools.
+So I explained that when replacing filament, we should always keep hold of the loose end and secure it in one of the holes on the spool.
+Otherwise, the filament can become tangled and cause printing failures.
+I demonstrated the correct process and explained why it was important.
+My colleague appreciated the explanation, and we didn’t encounter the same issue again during the following shifts.
+This experience reminded me that sharing technical knowledge is an important part of teamwork.
+Sometimes, a small piece of guidance can prevent repeated problems and save both time and resources.
+Tell Me About a Time You Had to Push Back on a Customer Request
+When I was working as a Makerspace Facilitator, students usually needed to book an appointment to use our 3D printers.
+However, if a printer was available, I would sometimes accommodate walk-in students because I wanted to be helpful.
+One day, I was training a student who was using the printer for the first time.
+The student needed extra help with the software, and another student arrived early for their appointment.
+At the same time, I had also accepted a walk-in student.
+Suddenly, three students needed my assistance at once.
+I tried my best to help everyone, but I realized I couldn’t give each student the attention they needed.
+Afterward, I discussed the situation with my supervisor.
+I explained that I felt uncomfortable turning students away when we had available equipment.
+My supervisor helped me see the situation differently.
+She explained that saying yes to one person sometimes means saying no to someone else who has already booked an appointment.
+That conversation changed how I think about customer service.
+I realized that providing good service doesn’t mean saying yes to every request.
+It’s about understanding priorities, managing expectations, and making sure resources are allocated fairly.
+Since then, I’ve become more careful about accepting additional requests when I already have other commitments.
+Tell us about a time you got a customer live on a technical product. What went wrong along the way, and how did you handle it? *
+As a Makerspace Facilitator at Simon Fraser University, I helped a student successfully use a laser cutter to complete his project. Although he had used the machine before, he encountered several technical issues that prevented it from cutting his design properly.
+I started by checking his setup and identified two problems. First, he had skipped the autofocus step, so the laser wasn’t properly focused on the material. Second, his design used an incorrect color code for the cutting lines. The machine required an exact RGB value of (255, 0, 0), but he had selected a slightly different shade of red.
+After correcting these issues, I scaled down his design and ran a small test cut to verify the settings before proceeding with the full project.
+However, a few minutes later, he encountered another problem. I investigated again and discovered that he had selected the cutting settings for 3 mm plywood instead of the 6 mm plywood he was using. As a result, the laser wasn’t cutting through the material.
+I explained the issue, helped him adjust the settings, and guided him through the process. He was then able to complete his project successfully.
+This experience taught me the importance of systematic troubleshooting, validating configurations through small tests, and helping customers understand the technology so they can use it more confidently and independently.
+ 
+Tell us about an integration you worked on between two systems. What was your role, and what did you learn? *
+During my software engineering internship at Huawei, I worked on integrating an edge computing system with Huawei’s cloud platform, allowing edge devices to be managed remotely.
+I was responsible for designing, developing, and testing four Python-based modules covering WebSocket connectivity, cloud configuration, message processing, and device status reporting.
+One of the main challenges was ensuring that the integration was secure and reliable.
+During design reviews, senior engineers raised concerns about authentication, traffic spikes, and concurrency.
+To address these concerns, I collaborated with the cloud-side team to refine the authentication process, including updating credentials after initial authentication.
+I also evaluated different approaches to rate limiting and concurrency management. Based on the system requirements and feedback from senior engineers, I implemented token bucket and fixed-window rate limiting, along with a coroutine pool to manage concurrent requests more efficiently.
+After the design was approved, I developed the modules and wrote automated tests to validate their functionality.
+This experience taught me that successful system integration involves much more than establishing communication between two systems. It requires understanding the requirements and constraints on both sides, collaborating across teams, and designing for security, reliability, and scalability from the beginning.
+ 
+Please describe your hands-on experience working with web technologies such as REST APIs, JavaScript, HTML, WebRTC, and WebSockets. Experience with SIP or media streaming technologies is a plus — if applicable, please include where you’ve used them and your level of involvement.
+ 
+I have hands-on experience with REST APIs, JavaScript/TypeScript, HTML, and WebSockets through my software engineering internship at Huawei and my graduate research project.
+During my internship at Huawei, I designed and developed Python-based modules to integrate edge computing devices with Huawei’s cloud platform. My work included WebSocket communication, cloud configuration, message processing, and device status reporting. I also implemented message conversion between WebSocket and RESTful interfaces, along with rate-limiting mechanisms to improve system reliability.
+For my graduate research project, I developed a web-based personalized reading assistant using React, TypeScript, HTML, and FastAPI. I built frontend components and backend REST APIs for document processing and AI-generated explanations.
+I also worked with browser-based webcam capture and real-time video frame processing to support gaze tracking and user interaction analysis. This involved working with browser media APIs, processing video frames, and integrating the results into the web application.
+While I haven’t worked directly with SIP or WebRTC, I have practical experience with WebSockets, REST APIs, and browser-based video processing. These projects have given me a solid foundation in web communication technologies and experience troubleshooting integration challenges across frontend and backend systems.
+ 
+  
