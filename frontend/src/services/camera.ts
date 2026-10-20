@@ -1,46 +1,36 @@
 export class CameraService {
-  private stream: MediaStream | null = null;
+  private captureTimer: number | null = null;
 
-  async start(video: HTMLVideoElement, onFrame: (frame: Blob) => void) {
-    // 1. request camera access
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        width: 640,
+  /**
+   * Publishes frames from WebGazer's camera canvas. WebGazer is deliberately
+   * the only code that calls getUserMedia, avoiding a competing camera stream.
+   */
+  start(source: HTMLCanvasElement, onFrame: (frame: Blob) => void) {
+    this.stop();
 
-        height: 480,
-      },
-    });
-    // const video = document.createElement("video");
+    const captureCanvas = document.createElement("canvas");
+    const context = captureCanvas.getContext("2d");
 
-    video.srcObject = this.stream;
+    const capture = () => {
+      if (!context || source.width === 0 || source.height === 0) return;
 
-    await video.play();
-    console.log("video w_h");
-    console.log(video.videoWidth, video.videoHeight);
-    // 3. create canvas for screenshots
-    const canvas = document.createElement("canvas");
+      captureCanvas.width = source.width;
+      captureCanvas.height = source.height;
+      context.drawImage(source, 0, 0, captureCanvas.width, captureCanvas.height);
 
-    const context = canvas.getContext("2d");
-
-    // 4. 2 frames per second
-    setInterval(() => {
-      if (!context) return;
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      //   Take the current picture in the canvas, convert it into a PNG Blob, and when that conversion finishes, run this function
-      canvas.toBlob((blob) => {
-        if (blob) {
-          onFrame(blob);
-        }
+      captureCanvas.toBlob((blob) => {
+        if (blob) onFrame(blob);
       }, "image/png");
-    }, 1000);
+    };
+
+    capture();
+    this.captureTimer = window.setInterval(capture, 500);
   }
 
   stop() {
-    this.stream?.getTracks().forEach((track) => track.stop());
+    if (this.captureTimer !== null) {
+      window.clearInterval(this.captureTimer);
+      this.captureTimer = null;
+    }
   }
 }

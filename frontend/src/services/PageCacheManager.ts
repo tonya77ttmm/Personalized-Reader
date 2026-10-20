@@ -60,8 +60,14 @@ export class PageCacheManager {
 
     // Remove pages until we're at or below maxSize
     while (this.cache.size > this.maxSize) {
-      const firstPageNumber = Math.min(...this.cache.keys());
-      this.cache.delete(firstPageNumber);
+      const furthestPageNumber = [...this.cache.keys()].reduce(
+        (furthest, pageNumber) =>
+          Math.abs(pageNumber - this.currentPage) >
+          Math.abs(furthest - this.currentPage)
+            ? pageNumber
+            : furthest,
+      );
+      this.cache.delete(furthestPageNumber);
     }
   }
 

@@ -1,0 +1,17 @@
+{
+  "id": "a5e1faf0-eba2-451d-a53e-9d1d544b0e03",
+  "title": "test_document.txt",
+  "metadata": {
+    "file_type": "text/plain",
+    "file_size": 12912,
+    "word_count": 1919,
+    "estimated_reading_time": 9,
+    "language": "en"
+  },
+  "uploaded_at": "2026-10-20T12:16:41.782456",
+  "preview": "Over the past few years, researchers have taken an interest in incorporating knowledge graphs (KG) into RS [20]. A KG...",
+  "char_count": 12894,
+  "line_count": 4,
+  "total_pages": 4,
+  "words_per_page": 500
+}

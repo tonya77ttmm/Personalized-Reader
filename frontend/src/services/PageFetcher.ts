@@ -58,7 +58,7 @@ export class PageFetcher {
    */
   async fetchMetadata(documentId: string): Promise<DocumentMetadata> {
     const url = `${this.baseUrl}/api/documents/${documentId}/metadata`;
-    const response = await fetch(url);
+    const response = await this.fetchWithRetry(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch metadata: ${response.status}`);
@@ -77,7 +77,7 @@ export class PageFetcher {
    */
   async fetchPage(documentId: string, pageNumber: number): Promise<PageData> {
     const url = `${this.baseUrl}/api/documents/${documentId}/pages/${pageNumber}`;
-    const response = await fetch(url);
+    const response = await this.fetchWithRetry(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch pagedata: ${response.status}`);
@@ -85,6 +85,30 @@ export class PageFetcher {
 
     const data: PageData = await response.json();
     return data;
+  }
+
+  private async fetchWithRetry(url: string): Promise<Response> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= this.retryConfig.maxRetries; attempt += 1) {
+      try {
+        return await fetch(url);
+      } catch (error) {
+        lastError = error;
+
+        if (attempt === this.retryConfig.maxRetries) break;
+
+        const delay = Math.min(
+          this.retryConfig.initialDelayMs * 2 ** attempt,
+          this.retryConfig.maxDelayMs,
+        );
+        await new Promise((resolve) => window.setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("Unable to reach the document service.");
   }
 
   //   /**

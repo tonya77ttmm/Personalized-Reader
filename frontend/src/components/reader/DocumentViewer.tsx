@@ -1,4 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { PageCacheManager } from "../../services/PageCacheManager";
+import {
+  PageData,
+  DocumentMetadata,
+  PageFetcher,
+} from "../../services/PageFetcher";
+
+import { type GazePoint } from "../../hooks/useWebGazer";
+import { ConfusionPanel } from "../ConfusionPanel";
 interface DocumentViewerProps {
   documentId: string;
   title?: string;
@@ -16,6 +25,24 @@ interface Document {
     language: string;
   };
   uploaded_at: string;
+}
+
+function GazeParagraph({ text }: { text: string }) {
+  const tokens = text.split(/(\s+)/);
+
+  return (
+    <>
+      {tokens.map((token, index) =>
+        /^\s+$/.test(token) ? (
+          token
+        ) : (
+          <span key={index} data-gaze-word={token}>
+            {token}
+          </span>
+        ),
+      )}
+    </>
+  );
 }
 
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
@@ -302,7 +329,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* Left Side - Document Content (2/3) */}
       <div className="w-3/4">
         <article className="mx-auto flex flex-col px-6 pb-12">
-          {/* <ConfusionPanel /> */}
+          {<ConfusionPanel />}
           {/* Document Header */}
           <header className=" flex items-center justify-between">
             <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">
@@ -388,6 +415,11 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             )}
           </div>
 
+          {/* {fixatedWord && (
+            <p className="mt-2 text-xs text-blue-600">
+              Current fixation: {fixatedWord}
+            </p>
+          )} */}
         </article>
       </div>
 
