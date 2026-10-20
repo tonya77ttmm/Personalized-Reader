@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.1"
+    "react-router-dom": "^6.20.1",
+    "webgazer": "git+https://github.com/brownhci/WebGazer.git#a58228f8af19c74ce9fa9aec13396949611dc06a"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

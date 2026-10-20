@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { PageCacheManager } from "../../services/PageCacheManager";
 import {
   PageData,
@@ -6,7 +6,7 @@ import {
   PageFetcher,
 } from "../../services/PageFetcher";
 
-import { useReadingSession } from "../../hooks/useReadingSession";
+import { type GazePoint } from "../../hooks/useWebGazer";
 import { ConfusionPanel } from "../ConfusionPanel";
 interface DocumentViewerProps {
   documentId: string;
@@ -27,6 +27,24 @@ interface Document {
   uploaded_at: string;
 }
 
+function GazeParagraph({ text }: { text: string }) {
+  const tokens = text.split(/(\s+)/);
+
+  return (
+    <>
+      {tokens.map((token, index) =>
+        /^\s+$/.test(token) ? (
+          token
+        ) : (
+          <span key={index} data-gaze-word={token}>
+            {token}
+          </span>
+        ),
+      )}
+    </>
+  );
+}
+
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
   documentId,
   onUploadDocument,
@@ -34,8 +52,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fontSize, setFontSize] = useState(20);
-  const [lineHeight, setLineHeight] = useState(2.8);
+  const [fontSize] = useState(20);
+  const [lineHeight] = useState(2.8);
   const [selectedText, setSelectedText] = useState<string>("");
   const [explanation, setExplanation] = useState<string>("");
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
@@ -57,8 +75,15 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [pageCache] = useState<PageCacheManager>(new PageCacheManager());
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(false);
   const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
-  const [metadataError, setMetadataError] = useState<string | null>(null);
+  const [, setMetadataError] = useState<string | null>(null);
   const [pageFetcher] = useState<PageFetcher>(new PageFetcher());
+  const [fixatedWord, setFixatedWord] = useState<string | null>(null);
+
+  const handleFixation = useCallback((point: GazePoint) => {
+    const target = window.document.elementFromPoint(point.x, point.y);
+    const wordElement = target?.closest<HTMLElement>("[data-gaze-word]");
+    setFixatedWord(wordElement?.dataset.gazeWord ?? null);
+  }, []);
 
   // Fetch document metadata on component mount
   useEffect(() => {
@@ -428,7 +453,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* Left Side - Document Content (2/3) */}
       <div className="w-3/4  overflow-hidden">
         <article className="mx-auto flex flex-col">
-          <ConfusionPanel />
+          <ConfusionPanel onFixation={handleFixation} />
           {/* Document Header */}
           <header className=" flex items-center justify-between">
             <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">
@@ -462,7 +487,11 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               ? // Render paginated content
                 currentPageData.content.split("\n").map((paragraph, index) => (
                   <p key={index} className="mb-6 indent-6">
-                    {paragraph.trim() || "\u00A0"}
+                    {paragraph.trim() ? (
+                      <GazeParagraph text={paragraph} />
+                    ) : (
+                      "\u00A0"
+                    )}
                   </p>
                 ))
               : "No Data Available"}
@@ -519,6 +548,12 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               </div>
             )}
           </div>
+
+          {/* {fixatedWord && (
+            <p className="mt-2 text-xs text-blue-600">
+              Current fixation: {fixatedWord}
+            </p>
+          )} */}
 
           {/* Pagination Navigation Controls */}
           {metadata && totalPages > 0 && (
