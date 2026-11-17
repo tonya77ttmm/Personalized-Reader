@@ -1,0 +1,37 @@
+Theory and Research Concerning Social Comparisons 
+
+of Personal Attributes 
+
+Joanne V. Wood 
+
+An important source of knowledge about oneself is comparisons with other people. In 1954, Festinger proposed a theory of social comparison based on this insight. Although interest in the theory has waxed and waned since then (Goethals, 1986b), social comparison research has enjoyed a resurgence recently: Over 100 journal articles on social comparison have appeared since 1982, which is almost three times the number published in the theory’s first 12 years (Radloff & Bard, 1966). Moreover, social comparison processes are central to other prominent theories in social psychology, including relative deprivation (Masters & Smith, 1987; Olson, Herman & Zanna, 1986), Tesser’s self-evaluation maintenance model (Tesser, 1986), and Tajfel and Turner’s (1979) social identity theory of groups. Although social comparison theory was once dubbed “everybody’s second-favorite theory in social psychology (but almost nobody’s first)” (Arrowood, 1978, p. 491), the literature has never before had more vitality. 
+
+This literature review illustrates a contrasting portrait of the individual, the social environment, and the comparison process, and focuses on comparisons of personal attributes such as abilities and personality characteristics. It does not concern comparisons of opinions, emotions, or comparison processes in groups. Although this article does not summarize relative deprivation research, which concerns comparisons of outcomes (e.g., pay), it does describe findings that are especially relevant to comparisons of personal attributes. 
+
+ 
+
+Target Selections Along the Dimension Under Evaluation 
+
+ 
+
+Festinger's similarity hypothesis reads as follows: 
+
+ 
+
+“The tendency to compare oneself with some other specific person decreases as the difference between his [or her] opinion or ability and one's own increases.” (Festinger, 1954, p. 120) 
+
+ 
+
+This seemingly simple hypothesis sparked considerable debate over what constitutes a "similar" comparison other (Latane, 1966; Suls, 1977). According to one interpretation, the phrase "the tendency to compare . . . decreases as the difference . . . increases" implies that similarity is defined in terms of the specific dimension under evaluation. That is, when evaluating an ability, one would compare oneself to someone whose ability is similar to one's own. Evidence pertaining to this interpretation of similarity is considered first. 
+
+ 
+
+Rank-order studies are well suited to examining this interpretation of similarity, because they offer subjects a selection of comparison targets who vary only in their positions on the dimension under evaluation. Subjects are given bogus information about how they and several other subjects scored on a test. They are told that their score ranks in the middle of the others' scores and are given the opportunity to see the score of a person occupying one other rank. According to the similarity prediction, subjects will select comparison others who are close to themselves in the rank order. A large number of studies support this prediction (e.g., Cruder, 1971; Cruder, Korth, Dichtel, & Glos, 1975; Wheeler, 1966; Wheeler, Koestner, & Driver, 1982). 
+
+ 
+
+Unfamiliar versus familiar dimensions. However, Wheeler et al. (1969) discovered an important exception to the similarity prediction: When subjects do not know what the range of scores is, they prefer to learn the scores of the others who are most dissimilar to themselves in the rank order: the highest scoring person and the lowest scoring person (Friend & Gilbert, 1973; Cruder, 1971; Cruder et al., 1975; Thornton & Arrowood, 1966; Wilson & Benner, 1971). If subjects already know what their scores are in the rank-order studies, and they know that their score falls in the middle of the group, what exactly are they doing when they seek information about the extremes? Extremely different others may exemplify the characteristic under evaluation, which may be particularly useful when one is unfamiliar with the dimension under evaluation (Arrowood & Friend, 1969; Thornton & Arrowood, 1966). For example, a young girl seeking to understand what extroversion is may look to an extremely outgoing friend and to an extremely timid friend. 
+
+ 
+
+Another possibility is that when people are unfamiliar with the dimension under evaluation, they first wish to determine the range of scores on the dimension (Deutsch & Krauss, 1965; Singer, 1966; Wheeler et al., 1969). Learning the range of scores may be helpful because knowing one's own score may have little meaning by itself. Given the evidence cited earlier that people define themselves in relation to others in their social environment, subjects may not be able to interpret their own score without knowing where others stand on the dimension and how far the middle score is from those of the others. This interpretation of range seeking is consistent with evidence from studies that do not use the rank-order method. When subjects are not constrained to select a single score, they appear to be interested in obtaining any information they can about the dimension; they are interested in learning the group's mean (Sanders, 1982a; Suls & Tesch, 1978) or in examining the entire distribution of scores (Brickman & Herman, 1971), especially when they are uncertain about the dimension under evaluation (Brickman & Herman, 1971; Cruder et al., 1975). These results suggest that on unfamiliar dimensions, or on previously familiar dimensions in a new social context, one's goal is to learn the distribution of others' standings, perhaps as an initial step toward self-evaluation (cf. Wheeler & Zuckerman, 1977).  

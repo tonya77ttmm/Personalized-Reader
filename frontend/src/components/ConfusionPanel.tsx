@@ -65,15 +65,15 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
 
   return (
     <>
-      {!calibrated && isEyeTrackingReady && (
+      {/*!calibrated && isEyeTrackingReady && (
         <CalibrationOverlay
           onCalibrate={calibrateAt}
           onComplete={() => setCalibrated(true)}
           onRestart={restartCalibration}
         />
-      )}
+      )*/}
 
-      {gazeTrail.map((point, index) => (
+      {/* {gazeTrail.map((point, index) => (
         <div
           key={index}
           aria-hidden="true"
@@ -93,7 +93,7 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
             zIndex: 3000,
           }}
         />
-      ))}
+      ))} */}
 
       <div
         style={{
@@ -138,11 +138,11 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
                 : "Not confused"}
         </p>
 
-        {gazePoint && (
+        {/* {gazePoint && (
           <p style={{ fontSize: "10px" }}>
             Gaze: {Math.round(gazePoint.x)}, {Math.round(gazePoint.y)}
           </p>
-        )}
+        )} */}
       </div>
     </>
   );
