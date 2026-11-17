@@ -2,11 +2,91 @@
 SQLAlchemy database models for documents and pages.
 """
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Index
+# from enum import Enum
+import enum
+
+from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, Index, Enum
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..database import Base
+
+class EventType(str, enum.Enum):
+    CONFUSION="confusion_event"
+    EYE_TRACKING="eye_tracking_event"
+    SCROLLING="scrolling_event"
+    HELP="help_event"
+    FEEDBACK="feedback_event"
+
+class TriggerType(str, enum.Enum):
+    MANUAL="manual"
+    AUTOMATIC="automatic"
+
+class FeedbackRating(str, enum.Enum):
+    USEFUL="useful"
+    NOT_USEFUL="not_useful"
+    BAD_TIMING="bad_timing"
+
+
+class Users(Base):
+    __tablename__="users"
+    id = Column(String, primary_key=True, index=True)
+
+class Articles(Base):
+    __tablename__="articles"
+    id = Column(String, primary_key=True, index=True)
+    content= Column(Text, nullable=False)
+
+class ReadingSessions(Base):
+    __tablename__="reading_sessions"
+    id = Column(String, primary_key=True,index=True)
+    user_id=Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    article_id=Column(String, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
+    started_at=Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    ended_at=Column(DateTime, nullable=True)
+
+class Events(Base):
+    __tablename__="events"
+    id= Column(String, primary_key=True, index=True)
+    session_id= Column(String, ForeignKey("reading_sessions.id", ondelete="CASCADE"), nullable=False)
+    timestamp=Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    event_type=Column(Enum(EventType, name="event_type_enum", values_callable=lambda x:[e.value for e in x]), nullable=False) 
+
+class ScrollingEvents(Base):
+    __tablename__="scrolling_events"
+    event_id = Column(String, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    scroll_Y = Column(Integer, nullable=False)
+
+class ConfusionEvents(Base):
+    __tablename__="confusion_events"
+    event_id= Column(String, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    status=Column(Integer, nullable=False)  # 1 for confused, 0 for not confused
+
+class EyeTrackingEvents(Base):
+    __tablename__="eye_tracking_events"
+    event_id= Column(String, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    gaze_x=Column(Integer, nullable=False)
+    gaze_y=Column(Integer, nullable=False)
+
+class Helps(Base):
+    __tablename__="helps"
+    event_id= Column(String, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    original_text=Column(Text, nullable=False)
+    context=Column(Text, nullable=False)
+    explanation=Column(Text, nullable=False)
+    confusion_id= Column(String, ForeignKey("confusion_events.event_id", ondelete="SET NULL"), nullable=True)
+    eyetracking_id= Column(String, ForeignKey("eye_tracking_events.event_id", ondelete="SET NULL"), nullable=True)
+    trigger_type=Column(Enum(TriggerType, name="trigger_type_enum", values_callable=lambda x:[e.value for e in x]), nullable=False)
+
+class Feedbacks(Base):
+    __tablename__="feedbacks"
+    event_id= Column(String, ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    help_id= Column(String, ForeignKey("helps.event_id", ondelete="CASCADE"), nullable=False)
+    feedback_rating=Column(Enum(FeedbackRating, name="feedback_rating_enum", values_callable=lambda x:[e.value for e in x]), nullable=False)
+   
+
+
+
 
 
 class Document(Base):
