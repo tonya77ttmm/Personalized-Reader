@@ -6,6 +6,7 @@ import os
 from app.api.documents import router as documents_router
 from app.api.explanations import router as explanations_router
 from app.database import init_db
+import app.models.db_models
 
 # Load environment variables
 load_dotenv()

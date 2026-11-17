@@ -8,13 +8,15 @@ import os
 from datetime import datetime
 from typing import List
 from pathlib import Path
+from ..schemas.events import EventsCreate
 from fastapi import APIRouter, File,  UploadFile, HTTPException, WebSocket, status
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 from ..models.document import DocumentResponse, DocumentMetadataResponse, PageDataResponse, ErrorResponse
 from ..services.document_service import DocumentService
 from ..services.confusion_service.confusion_service import ConfusionService
-
+from ..services.logging.event_logging import save_confusion_to_db
 # Optional import for python-magic (requires system libmagic)
 try:
     import magic
@@ -98,24 +100,20 @@ def validate_file(file: UploadFile, content: bytes) -> None:
         )
 
 
+
 @router.websocket("/ws")
-async def reading_ws(websocket:WebSocket):
+async def confusion_prediction_ws(websocket:WebSocket):
     await websocket.accept()
     print("Client connected!", flush=True)
     try:
         while True:
             frame=await websocket.receive_bytes()
-            # Save the frame for debugging
-            # Path("debug").mkdir(exist_ok=True)
-
-            # with open("debug/latest_frame.png","wb") as f:
-
-            #     f.write(frame)
-
-            # print("saved frame", flush=True)
-            # prediction=confusion_service.predict(frame)
+            session_id="123456"  # Placeholder for actual session ID
+    
             prediction,face_box = await asyncio.to_thread(confusion_service.predict,frame)
             print("Prediction:", prediction , flush=True)
+            status= 1 if prediction>0.3 else 0 
+            event_id=await run_in_threadpool(save_confusion_to_db, session_id, status)
             await websocket.send_json({"confusion_prob":prediction,"face_box":face_box})
     except Exception as e:
         print(f"WebSocket error: {e}")

@@ -5,9 +5,13 @@ import { CalibrationOverlay } from "./eyeTracking/CalibrationOverlay";
 
 type ConfusionPanelProps = {
   onFixation?: (point: GazePoint) => void;
+  onConfusionChange?: (confusion: number, isConfused: boolean) => void;
 };
 
-export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
+export function ConfusionPanel({
+  onFixation,
+  onConfusionChange,
+}: ConfusionPanelProps) {
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const [calibrated, setCalibrated] = useState(false);
   const [gazeTrail, setGazeTrail] = useState<GazePoint[]>([]);
@@ -29,6 +33,10 @@ export function ConfusionPanel({ onFixation }: ConfusionPanelProps) {
     calibrateAt,
   } = useWebGazer({ onFixation: handleFixation });
   const { confusion, faceBox } = useReadingSession(sourceCanvas);
+
+  useEffect(() => {
+    onConfusionChange?.(confusion, confusion > 0.3);
+  }, [confusion, onConfusionChange]);
 
   const frameSize = {
     width: sourceCanvas?.width ?? 640,

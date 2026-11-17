@@ -104,7 +104,7 @@ export function useWebGazer(options: UseWebGazerOptions = {}) {
               Math.hypot(
                 point.x - fixationAnchor.x,
                 point.y - fixationAnchor.y,
-              ) > 200
+              ) > 100
             ) {
               fixationAnchor = { ...point, startedAt: elapsedTime };
               fixationReported = false;

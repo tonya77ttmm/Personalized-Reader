@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { PageCacheManager } from "../../services/PageCacheManager";
-import {
-  PageData,
-  DocumentMetadata,
-  PageFetcher,
-} from "../../services/PageFetcher";
 
 import { type GazePoint } from "../../hooks/useWebGazer";
+import {
+  getConceptSupportForParagraph,
+  getLanguageSupportForParagraph,
+  getParagraphSupportForParagraph,
+  inferFixationMode,
+  type FixationEntry,
+  type PersonalizationSupportItem,
+} from "../../services/personalizationSupport";
 import { ConfusionPanel } from "../ConfusionPanel";
 interface DocumentViewerProps {
   documentId: string;
@@ -25,24 +27,6 @@ interface Document {
     language: string;
   };
   uploaded_at: string;
-}
-
-function GazeParagraph({ text }: { text: string }) {
-  const tokens = text.split(/(\s+)/);
-
-  return (
-    <>
-      {tokens.map((token, index) =>
-        /^\s+$/.test(token) ? (
-          token
-        ) : (
-          <span key={index} data-gaze-word={token}>
-            {token}
-          </span>
-        ),
-      )}
-    </>
-  );
 }
 
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
@@ -68,6 +52,19 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     height: number;
   } | null>(null);
   const [selectionOffset, setSelectionOffset] = useState<number>(0);
+  const [supportHints, setSupportHints] = useState<PersonalizationSupportItem[]>([]);
+  const [paragraphSupport, setParagraphSupport] = useState<PersonalizationSupportItem[]>([]);
+  const [supportTooltips, setSupportTooltips] = useState<
+    Array<{ key: string; top: number; left: number; text: string }>
+  >([]);
+  const fixationHistoryRef = useRef<FixationEntry[]>([]);
+  const paragraphEntryTimesRef = useRef<Record<string, number>>({});
+  const lastParagraphRef = useRef<string | null>(null);
+  const confusionRef = useRef<number>(0);
+
+  const handleConfusionChange = useCallback((confusion: number) => {
+    confusionRef.current = confusion;
+  }, []);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -112,6 +109,97 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       .split(/\n\s*\n/)
       .filter((word) => word.length > 0).length;
   };
+
+  const escapeRegExp = (value: string): string =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const renderParagraphWithSupportHighlights = (
+    paragraph: string,
+    paragraphId: string,
+  ): React.ReactNode => {
+    const matchingHints = supportHints.filter((item) => item.paragraphId === paragraphId);
+    if (matchingHints.length === 0) {
+      return paragraph.trim() || "\u00A0";
+    }
+
+    const uniqueHints = matchingHints.filter(
+      (item, index, items) =>
+        items.findIndex((candidate) => candidate.title === item.title) === index,
+    );
+
+    const pattern = uniqueHints
+      .map((item) => escapeRegExp(item.title))
+      .join("|");
+
+    if (!pattern) {
+      return paragraph.trim() || "\u00A0";
+    }
+
+    const regex = new RegExp(`(${pattern})`, "gi");
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(paragraph)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(paragraph.slice(lastIndex, match.index));
+      }
+
+      const matchedText = match[0];
+      const matchingHint = uniqueHints.find(
+        (item) => item.title.toLowerCase() === matchedText.toLowerCase(),
+      );
+
+      parts.push(
+        <mark
+          key={`${paragraphId}-${matchedText}-${match.index}`}
+          className="rounded-sm bg-yellow-200 px-0.5 text-blue-900 ring-1 ring-blue-200"
+          data-support-key={`${paragraphId}-${matchingHint?.title ?? matchedText}`}
+        >
+          {matchedText}
+        </mark>,
+      );
+
+      lastIndex = match.index + matchedText.length;
+    }
+
+    if (lastIndex < paragraph.length) {
+      parts.push(paragraph.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : paragraph.trim() || "\u00A0";
+  };
+
+  useEffect(() => {
+    if (!supportHints.length || !viewportRef.current) {
+      setSupportTooltips([]);
+      return;
+    }
+
+    const containerRect = viewportRef.current.getBoundingClientRect();
+    const nextTooltips = supportHints.flatMap((item) => {
+      const key = `${item.paragraphId}-${item.title}`;
+      const element = viewportRef.current?.querySelector(
+        `[data-support-key="${CSS.escape(key)}"]`,
+      ) as HTMLElement | null;
+
+      if (!element) {
+        return [];
+      }
+
+      const rect = element.getBoundingClientRect();
+      return [
+        {
+          key,
+          text: `${item.title}: ${item.text}`,
+          top: rect.top - containerRect.top - 8,
+          left: rect.left - containerRect.left + rect.width / 2,
+        },
+      ];
+    });
+
+    setSupportTooltips(nextTooltips);
+  }, [supportHints]);
 
   // Apply yellow highlight to selected text for inline display
   useEffect(() => {
@@ -211,6 +299,75 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
     setSelectionPosition(null);
     setSelectionOffset(0);
   };
+
+  const getParagraphIdFromPoint = useCallback((point: GazePoint) => {
+    const target = window.document.elementFromPoint(point.x, point.y);
+    const paragraphElement = target?.closest<HTMLElement>("[data-paragraph-id]");
+    return paragraphElement?.dataset.paragraphId ?? null;
+  }, []);
+
+  const handleFixation = useCallback(
+    (point: GazePoint) => {
+      const paragraphId = getParagraphIdFromPoint(point);
+      if (!paragraphId) {
+        return;
+      }
+
+      const timestamp = Date.now();
+      const confusion = confusionRef.current;
+      const sameParagraphFixations = fixationHistoryRef.current.filter(
+        (entry) => entry.paragraphId === paragraphId,
+      ).length;
+      const isConfused = confusion > 0.3 || sameParagraphFixations >= 3;
+
+      fixationHistoryRef.current = [
+        ...fixationHistoryRef.current,
+        { paragraphId, timestamp, confusion },
+      ].filter((entry) => timestamp - entry.timestamp <= 30000);
+
+      const dominantParagraphId = inferFixationMode(fixationHistoryRef.current, 3000);
+
+      const previousParagraphId = lastParagraphRef.current;
+      if (previousParagraphId && previousParagraphId !== paragraphId) {
+        const previousParagraphStartedAt = paragraphEntryTimesRef.current[previousParagraphId] ?? timestamp;
+        const previousParagraphDwell = timestamp - previousParagraphStartedAt;
+
+        if ((isConfused || sameParagraphFixations >= 2) && previousParagraphDwell >= 10000) {
+          const previousHelp = getParagraphSupportForParagraph(previousParagraphId);
+          if (previousHelp.length > 0) {
+            setParagraphSupport(previousHelp);
+          }
+        }
+      }
+
+      if (!(paragraphId in paragraphEntryTimesRef.current)) {
+        paragraphEntryTimesRef.current[paragraphId] = timestamp;
+      }
+
+      const dwellTimeMs = timestamp - (paragraphEntryTimesRef.current[paragraphId] ?? timestamp);
+
+      if (dominantParagraphId === paragraphId && isConfused) {
+        const hintItems = [
+          ...getLanguageSupportForParagraph(paragraphId),
+          ...getConceptSupportForParagraph(paragraphId),
+        ];
+
+        if (hintItems.length > 0) {
+          setSupportHints(hintItems);
+        }
+      }
+
+      if (dominantParagraphId === paragraphId && isConfused && dwellTimeMs >= 30000) {
+        const paragraphHelp = getParagraphSupportForParagraph(paragraphId);
+        if (paragraphHelp.length > 0) {
+          setParagraphSupport(paragraphHelp);
+        }
+      }
+
+      lastParagraphRef.current = paragraphId;
+    },
+    [getParagraphIdFromPoint],
+  );
 
   const requestExplanation = async () => {
     if (!selectedText.trim()) return;
@@ -329,7 +486,12 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
       {/* Left Side - Document Content (2/3) */}
       <div className="w-3/4">
         <article className="mx-auto flex flex-col px-6 pb-12">
-          {<ConfusionPanel />}
+          {
+            <ConfusionPanel
+              onFixation={handleFixation}
+              onConfusionChange={handleConfusionChange}
+            />
+          }
           {/* Document Header */}
           <header className=" flex items-center justify-between">
             <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">
@@ -355,12 +517,38 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             }}
           >
             <div ref={contentRef} onMouseUp={handleTextSelection}>
-              {document.content.split("\n").map((paragraph, index) => (
-                <p key={index} className="mb-0.5 indent-3">
-                  {paragraph.trim() || "\u00A0"}
-                </p>
-              ))}
+              {document.content.split("\n").map((paragraph, index) => {
+                const paragraphId = `p${index + 1}`;
+
+                return (
+                  <p
+                    key={index}
+                    data-paragraph-id={paragraphId}
+                    className="mb-0.5 indent-3"
+                  >
+                    {renderParagraphWithSupportHighlights(paragraph, paragraphId)}
+                  </p>
+                );
+              })}
             </div>
+
+            {supportTooltips.length > 0 && (
+              <>
+                {supportTooltips.map((tooltip) => (
+                  <div
+                    key={tooltip.key}
+                    className="pointer-events-none absolute z-20 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-900 shadow-sm whitespace-nowrap"
+                    style={{
+                      top: `${tooltip.top}px`,
+                      left: `${tooltip.left}px`,
+                      transform: "translate(-50%, -100%)",
+                    }}
+                  >
+                    {tooltip.text}
+                  </div>
+                ))}
+              </>
+            )}
 
             {/* Inline Explanation for ≤3 words */}
             {selectedText && wordCount <= 3 && selectionPosition && (
@@ -431,7 +619,29 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           height: "calc(100vh - 7rem)",
         }}
       >
-        {selectedText && wordCount > 3 ? (
+        {paragraphSupport.length > 0 ? (
+          <div className="space-y-4 pt-4">
+            <div className="border-b border-gray-200 pb-3">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Paragraph help
+              </h3>
+            </div>
+
+            {paragraphSupport.map((item) => (
+              <div
+                key={`${item.kind}-${item.paragraphId}`}
+                className="rounded-lg border border-amber-200 bg-amber-50 p-3"
+              >
+                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                  {item.source}
+                </div>
+                <p className="text-sm text-gray-800 leading-relaxed">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : selectedText && wordCount > 3 ? (
           <div>
             <div className="flex items-start justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-700">
